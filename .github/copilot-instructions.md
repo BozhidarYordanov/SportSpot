@@ -42,13 +42,17 @@ Use HTML, CSS and vanilla JavaScript to create a clean and intuitive user interf
   - When navigating via JavaScript, use `window.location.assign('/classes')` or similar clean paths.
   - For dynamic routing like Class Details, use query parameters as primary state management: `/class-details?id={id}`.
 4. Use full URLs like /home, /classes, /class-details, /booking, and /profile for better SEO and user experience.
-- **Home Page**: This page will display a Hero Banner with a call-to-action button to encourage users to browse classes. It will also include a common information section with details about the app's features and benefits.
-- **Class Browsing Page**: This page will allow users to browse through available sports classes. It will include filters and search functionality to help users find classes that match their preferences. Each class listing will include a summary of the class details and a link to the class details page.
-- **Class Details Page**: This page will provide detailed information about a specific class, including the instructor's name, class schedule, location, and a booking button.
-- **Booking Page**: This page will allow users to select a class, choose a time slot, and confirm their reservation. It will also display the user's upcoming reservations.
-- **User Profile Page**: This page will allow users to manage their account information, view their booking history, and update their preferences. It will also include options for users to log out.
+- **Home Page(/)**: This page will display a Hero Banner with a call-to-action button to encourage users to browse classes. It will also include a common information section with details about the app's features and benefits.
+- **Class Browsing Page(/classes)**: This page will allow users to browse through available sports classes. It will include filters and search functionality to help users find classes that match their preferences. Each class listing will include a summary of the class details and a link to the class details page.
+- **Class Details Page(/class-details)**: This page will provide detailed information about a specific class, including the instructor's name, class schedule, location, and a booking button.
+- **Booking Page(/booking)**: This page will allow users to select a class, choose a time slot, and confirm their reservation. It will also display the user's upcoming reservations.
+- **User Profile Page(/profile)**: This page will allow users to manage their account information, view their booking history, and update their preferences. It will also include options for users to log out.
 - **Navigation Component**: A reusable navigation component that can be included on all pages to provide easy access to key features such as the home page, class browsing, and user profile.
 - **Class Card Component**: A reusable component that displays a summary of a class, including the class name, instructor's name, schedule, and a link to the class details page. This component can be used on the home page and in search results to provide a consistent and visually appealing way to display class information.
+  - **Difficulty Indicators**: Each class must display its difficulty_level (1, 2, or 3) using a 3-bar visual system.
+    - Level 1 (Easy): 1 active bar, 2 inactive.  
+    - Level 2 (Moderate): 2 active bars, 1 inactive.  
+    - Level 3 (Hard): 3 active bars. 
 
 ## Backend and Database
 - Use Supabase as the backend for the app, which provides a PostgreSQL database, authentication, and a REST API.
@@ -65,8 +69,8 @@ Use HTML, CSS and vanilla JavaScript to create a clean and intuitive user interf
   3. **Password Reset**: Users should have the option to reset their password if they forget it. This can be implemented using Supabase's built-in password reset functionality, which sends a password reset email to the user.
   4. **Session Management**: Once logged in, users should have a session that allows them to access protected routes and features of the app. The session should be securely managed using Supabase's authentication tokens.
   5. **Logout**: Users should have the option to log out of their account, which will end their session and require them to log in again to access protected features.
-- Implement RLS policies to restrict access to data based on the authenticated user's role and permissions.
-- Implement user roles with a separate DB table `user_roles` + enum `roles` (e.g., admin, user) to manage permissions and access control within the app. This will allow for more granular control over who can access certain features and data within the app.
-- Admins (Trainers) can: Create, Update, and Delete workout classes and schedule slots.
-- Users (Clients) can: View classes and create/cancel their own bookings.
-- Use Row-Level Security (RLS) to ensure users cannot modify the schedule and admins can manage all data.
+- **RBAC Architecture**: Implement Role-Based Access Control using a dedicated user_roles table linked to profiles. Use a PostgreSQL enum app_role with values ('admin', 'user') to enforce data integrity.
+- **Permissions**:
+  - Admins (Trainers): Have full CRUD permissions (Create, Read, Update, Delete) on workout classes and schedule slots.
+  - Users (Clients): Can view available classes and manage (create/cancel) their own bookings.
+- **RLS Implementation**: Enable Row-Level Security (RLS) on all tables. Policies must verify permissions by querying the user_roles table to determine if the authenticated auth.uid() has the required admin or user role for the specific operation.
