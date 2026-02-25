@@ -12,6 +12,8 @@ Classical client-server app:
 - **Backend**: Supabase
 - **Database**: PostgreSQL (managed by Supabase)
 - **Authentication**: Supabase Auth
+- **File Storage**: Supabase Storage
+- **Build Tools**: Vite, npm
 - **API**: Supabase REST API
 - **Hosting**: Netlify
 - **Version Control**: GitHub
@@ -42,12 +44,28 @@ Use HTML, CSS and vanilla JavaScript to create a clean and intuitive user interf
   - When navigating via JavaScript, use `window.location.assign('/classes')` or similar clean paths.
   - For dynamic routing like Class Details, use query parameters as primary state management: `/class-details?id={id}`.
 4. Use full URLs like /home, /classes, /class-details, /booking, and /profile for better SEO and user experience.
-- **Home Page(/)**: This page will display a Hero Banner with a call-to-action button to encourage users to browse classes. It will also include a common information section with details about the app's features and benefits.
-- **Class Browsing Page(/classes)**: This page will allow users to browse through available sports classes. It will include filters and search functionality to help users find classes that match their preferences. Each class listing will include a summary of the class details and a link to the class details page.
-- **Class Details Page(/class-details)**: This page will provide detailed information about a specific class, including the instructor's name, class schedule, location, and a booking button.
-- **Booking Page(/booking)**: This page will allow users to select a class, choose a time slot, and confirm their reservation. It will also display the user's upcoming reservations.
-- **User Profile Page(/profile)**: This page will allow users to manage their account information, view their booking history, and update their preferences. It will also include options for users to log out.
+- **Landing Page (/)**: Targeted at guests and potential members. Its goal is to introduce the brand and encourage registration.
+  - **Hero Banner**: High-impact section with a catchy headline ("Your Next Workout Awaits") and a clear "Get Started" Call-to-Action (CTA) button.
+  - **"Why Us" Section**: A brief overview of the different sports and activities offered (Yoga, Box, Pilates, etc.).
+  - **Top Classes**: 3-4 feature cards showcasing the most popular workout types, including the 3-bar difficulty visual indicators.
+  - **Social Proof**: A section featuring client testimonials or a counter of total classes booked to build trust.
+  - **Dynamic Logic**: If the user is authenticated, the "Login" button in the navbar/hero should dynamically change to "Go to Dashboard".
+- **Dashboard (/dashboard)**: The personalized hub for authenticated users. The content adapts based on the user's role (admin vs user).
+
+  - **Upcoming Bookings**: A clear list of workouts the user has already signed up for (showing date, time, and instructor).
+
+  - **Workout History**: A recap of the last 2-3 completed sessions.
+
+  - **Quick Actions**: A prominent "Book a New Class" button that redirects the user directly to the /calendar page.
+
+  - **Statistics**: A visual summary (or a small chart) showing how many workouts the user has completed during the current month.
+- **Class Browsing Page (/classes)**: This page will allow users to browse through available sports classes. It will include filters and search functionality to help users find classes that match their preferences. Each class listing will include a summary of the class details and a link to the class details page.
+- **Class Details Page (/class-details)**: This page will provide detailed information about a specific class, including the instructor's name, class schedule, location, and a booking button.
+- **Booking Page (/booking)**: This page will allow users to select a date, choose a time slot, and confirm their reservation. It will also display the user's upcoming reservations.
+- **User Profile Page (/profile)**: This page will allow users to manage their account information, view their booking history, and update their preferences. It will also include options for users to log out.
+- **Admin Page (/admin)**: If the role is admin, in the header an [Admin] button will be rendered. It is a link to a page, where will be displayed club-wide stats (total bookings for today, new user registrations) and a "Manage Schedule" shortcut.
 - **Navigation Component**: A reusable navigation component that can be included on all pages to provide easy access to key features such as the home page, class browsing, and user profile.
+- **Footer Component**: A reusable footer component that can be included on all pages to provide additional information about the app, such as contact information, social media links, and copyright information.
 - **Class Card Component**: A reusable component that displays a summary of a class, including the class name, instructor's name, schedule, and a link to the class details page. This component can be used on the home page and in search results to provide a consistent and visually appealing way to display class information.
   - **Difficulty Indicators**: Each class must display its difficulty_level (1, 2, or 3) using a 3-bar visual system.
     - Level 1 (Easy): 1 active bar, 2 inactive.  
