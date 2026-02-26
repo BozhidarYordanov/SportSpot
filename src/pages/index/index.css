@@ -1,24 +1,123 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+body {
+  font-family: 'Plus Jakarta Sans', var(--bs-font-sans-serif);
+  background: #f7f8fc;
+}
+
 .hero-banner {
-  background: linear-gradient(135deg, var(--bs-light) 0%, var(--bs-body-bg) 100%);
+  background: radial-gradient(circle at 10% 20%, rgba(129, 140, 248, 0.28), transparent 38%),
+    radial-gradient(circle at 85% 10%, rgba(236, 72, 153, 0.22), transparent 35%),
+    linear-gradient(155deg, #ffffff 0%, #f6f8ff 55%, #ffffff 100%);
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
 }
 
-.activity-card {
-  transition: transform 0.2s ease;
+.hero-pill {
+  background: rgba(17, 24, 39, 0.08);
+  color: #111827;
+  border-radius: 999px;
+  font-weight: 600;
+  padding: 0.5rem 0.85rem;
 }
 
-.activity-card:hover {
-  transform: translateY(-2px);
+.hero-title {
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 
+.text-gradient {
+  background: linear-gradient(100deg, #4f46e5 0%, #9333ea 45%, #ec4899 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-media {
+  min-height: 320px;
+}
+
+.hero-image {
+  border-radius: 24px;
+  min-height: 320px;
+  object-fit: cover;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.16);
+}
+
+.featured-card {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  max-width: 270px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.social-proof-section,
+.proof-counter,
+.testimonial-card,
+.activity-card,
+.class-card {
+  border: 1px solid #f0f0f0;
+}
+
+.social-proof-section,
 .proof-counter,
 .testimonial-card {
-  background: var(--bs-body-bg);
+  background: #ffffff;
 }
 
+.activity-card,
+.class-card,
 .testimonial-card {
-  transition: transform 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
 }
 
+.activity-card:hover,
+.class-card:hover,
 .testimonial-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-5px);
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.14);
+}
+
+.difficulty-badge {
+  background: linear-gradient(120deg, #111827 0%, #334155 100%);
+  color: #ffffff;
+  border-radius: 999px;
+  padding: 0.45rem 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.animate-in {
+  opacity: 0;
+  transform: translateY(16px);
+  animation: fadeSlideUp 0.7s ease forwards;
+  animation-delay: var(--animate-delay, 0s);
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 991.98px) {
+  .featured-card {
+    position: static;
+    margin-top: 0.75rem;
+    max-width: 100%;
+  }
 }

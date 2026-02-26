@@ -1,40 +1,37 @@
-<section class="hero-banner rounded-4 p-4 p-md-5 mb-4 mb-md-5">
-  <div class="row align-items-center g-4">
-    <div class="col-lg-8">
-      <span class="badge text-bg-primary mb-3">Welcome to SportSpot</span>
-      <h1 class="display-5 fw-bold mb-3">Your Next Workout Awaits</h1>
+<section class="hero-banner rounded-5 p-4 p-md-5 mb-4 mb-md-5 animate-in" style="--animate-delay: 0.05s;">
+  <div class="row align-items-center g-4 g-xl-5">
+    <div class="col-lg-6">
+      <span class="badge hero-pill mb-3">Welcome to SportSpot</span>
+      <h1 class="hero-title fw-bold mb-3">Train smarter with your <span class="text-gradient">premium fitness hub</span></h1>
       <p class="lead text-secondary mb-4">
-        Discover top sports classes, learn from expert trainers, and build a routine that fits your lifestyle.
+        Discover elite classes, expert trainers, and seamless booking designed for your healthiest routine.
       </p>
-      <a href="/register" class="btn btn-primary btn-lg px-4">Get Started</a>
+      <div class="d-flex flex-wrap gap-2 gap-md-3">
+        <a href="/register" class="btn btn-dark btn-lg px-4 rounded-pill">Get Started</a>
+        <a href="/classes" class="btn btn-outline-dark btn-lg px-4 rounded-pill" data-link>Browse Classes</a>
+      </div>
     </div>
-    <div class="col-lg-4">
-      <div class="hero-highlight rounded-4 p-4 bg-white border h-100">
-        <p class="text-uppercase small fw-semibold text-secondary mb-2">Featured Activities</p>
-        <ul class="list-unstyled mb-0 d-grid gap-2">
-          <li class="d-flex justify-content-between align-items-center">
-            <span>Yoga</span>
-            <span class="badge text-bg-light border">Mind & Body</span>
-          </li>
-          <li class="d-flex justify-content-between align-items-center">
-            <span>Box</span>
-            <span class="badge text-bg-light border">High Energy</span>
-          </li>
-          <li class="d-flex justify-content-between align-items-center">
-            <span>Pilates</span>
-            <span class="badge text-bg-light border">Core Focus</span>
-          </li>
-          <li class="d-flex justify-content-between align-items-center">
-            <span>Spinning</span>
-            <span class="badge text-bg-light border">Cardio Boost</span>
-          </li>
-        </ul>
+
+    <div class="col-lg-6">
+      <div class="hero-media position-relative">
+        <img
+          src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1400&q=80"
+          alt="Athletes in a premium fitness training class"
+          class="img-fluid w-100 hero-image"
+          loading="lazy"
+        />
+        <article class="featured-card rounded-4 p-3 p-md-4 animate-in" style="--animate-delay: 0.25s;">
+          <p class="text-uppercase small fw-semibold mb-1 text-secondary">Featured Activity</p>
+          <h2 class="h5 mb-2">Sunrise Power Yoga</h2>
+          <p class="mb-3 text-secondary small">Tomorrow • 7:30 AM • 18 spots left</p>
+          <a href="/classes" class="btn btn-sm btn-light rounded-pill px-3" data-link>Reserve now</a>
+        </article>
       </div>
     </div>
   </div>
 </section>
 
-<section class="social-proof-section rounded-4 border bg-white p-4 p-md-5 mt-4 mt-md-5">
+<section class="social-proof-section rounded-5 border bg-white p-4 p-md-5 mt-4 mt-md-5 animate-in" style="--animate-delay: 0.12s;">
   <div class="row g-4 align-items-start">
     <div class="col-lg-4">
       <p class="text-uppercase small fw-semibold text-secondary mb-2">Social Proof</p>
@@ -65,7 +62,7 @@
   </div>
 </section>
 
-<section class="why-us-section mt-4 mt-md-5">
+<section class="why-us-section mt-4 mt-md-5 animate-in" style="--animate-delay: 0.2s;">
   <div class="d-flex justify-content-between align-items-end gap-3 mb-3 mb-md-4 flex-wrap">
     <div>
       <h2 class="h3 fw-bold mb-2">Why Us</h2>
@@ -96,6 +93,50 @@
       <article class="activity-card rounded-4 border h-100 p-3 p-md-4 bg-white">
         <h3 class="h5 mb-2">Spinning</h3>
         <p class="mb-0 text-secondary">Push your cardio limits with motivating, music-driven classes.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="top-classes-section mt-4 mt-md-5 animate-in" style="--animate-delay: 0.28s;">
+  <div class="d-flex justify-content-between align-items-end gap-3 mb-3 mb-md-4 flex-wrap">
+    <div>
+      <h2 class="h3 fw-bold mb-2">Top Classes</h2>
+      <p class="text-secondary mb-0">Popular sessions chosen by members this week.</p>
+    </div>
+  </div>
+
+  <div class="row g-3 g-md-4">
+    <div class="col-md-6 col-xl-3">
+      <article class="class-card rounded-4 border h-100 p-3 p-md-4 bg-white">
+        <p class="text-uppercase small fw-semibold text-secondary mb-2">Strength</p>
+        <h3 class="h5 mb-2">Performance Boxing</h3>
+        <p class="text-secondary mb-3">Coach Ava • 45 min</p>
+        <span class="badge difficulty-badge">Difficulty • 3</span>
+      </article>
+    </div>
+    <div class="col-md-6 col-xl-3">
+      <article class="class-card rounded-4 border h-100 p-3 p-md-4 bg-white">
+        <p class="text-uppercase small fw-semibold text-secondary mb-2">Mind &amp; Body</p>
+        <h3 class="h5 mb-2">Flow Yoga</h3>
+        <p class="text-secondary mb-3">Coach Emma • 50 min</p>
+        <span class="badge difficulty-badge">Difficulty • 1</span>
+      </article>
+    </div>
+    <div class="col-md-6 col-xl-3">
+      <article class="class-card rounded-4 border h-100 p-3 p-md-4 bg-white">
+        <p class="text-uppercase small fw-semibold text-secondary mb-2">Core</p>
+        <h3 class="h5 mb-2">Pilates Sculpt</h3>
+        <p class="text-secondary mb-3">Coach Mila • 40 min</p>
+        <span class="badge difficulty-badge">Difficulty • 2</span>
+      </article>
+    </div>
+    <div class="col-md-6 col-xl-3">
+      <article class="class-card rounded-4 border h-100 p-3 p-md-4 bg-white">
+        <p class="text-uppercase small fw-semibold text-secondary mb-2">Cardio</p>
+        <h3 class="h5 mb-2">HIIT Ride</h3>
+        <p class="text-secondary mb-3">Coach Leo • 35 min</p>
+        <span class="badge difficulty-badge">Difficulty • 3</span>
       </article>
     </div>
   </div>
