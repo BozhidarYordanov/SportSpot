@@ -29,6 +29,13 @@ Use HTML, CSS and vanilla JavaScript to create a clean and intuitive user interf
 - **Consistency**: Maintain a consistent design language throughout the app. Use consistent colors, fonts, and UI elements to create a cohesive and professional look. This will help users feel more comfortable and familiar with the app as they navigate through it.
 - **Feedback**: Provide clear feedback to users when they interact with the app. This can include visual cues such as loading indicators, success messages, and error messages to inform users about the status of their actions and guide them through the booking process.
 - **Performance**: Optimize the app for performance to ensure a smooth and responsive user experience. This includes minimizing the use of large images, optimizing API calls, and using efficient coding practices to reduce load times and improve overall performance.
+- **Visual Polish**: Use soft shadows (box-shadow: 0 10px 30px rgba(0,0,0,0.05)), rounded corners (border-radius: 16px or 24px), and subtle border strokes (1px solid #f0f0f0).
+- **Micro-interactions**: Every button and card must have a hover effect (e.g., transform: translateY(-5px) and transition: all 0.3s ease).
+- **Glassmorphism**: For overlays or cards on top of images, use backdrop-filter: blur(10px) with a semi-transparent white background.
+- **Gradients**: Use modern mesh gradients for hero sections instead of solid colors.
+- **Spacing**: Implement generous white space (padding/margin) to give the content "room to breathe" (follow the 8px grid system).
+- **Typography**: Use a high-quality sans-serif font like 'Inter' or 'Plus Jakarta Sans'. Set headings to font-weight: 700 and use letter-spacing: -0.02em for a premium look.
+- **Icons**: Use thin or duotone icons from Bootstrap Icons for a more sophisticated feel.
 
 ## Pages and Navigation
 1. Split the app into multiple pages: login, registration, home, class details, booking, and user profile. This will help to organize the content and provide a clear structure for users to navigate through the app.
