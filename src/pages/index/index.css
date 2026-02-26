@@ -9,3 +9,16 @@
 .activity-card:hover {
   transform: translateY(-2px);
 }
+
+.proof-counter,
+.testimonial-card {
+  background: var(--bs-body-bg);
+}
+
+.testimonial-card {
+  transition: transform 0.2s ease;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-2px);
+}
