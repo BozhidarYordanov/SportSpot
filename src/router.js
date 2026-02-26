@@ -2,6 +2,7 @@ import { renderHeader, initHeader } from './components/header/header';
 import { renderFooter } from './components/footer/footer';
 import { renderIndexPage, initIndexPage } from './pages/index/index';
 import { renderLoginPage, initLoginPage } from './pages/login/login';
+import { renderRegisterPage, initRegisterPage } from './pages/register/register';
 import { renderDashboardPage, initDashboardPage } from './pages/dashboard/dashboard';
 
 let currentAppElement = null;
@@ -14,6 +15,10 @@ const routes = {
   '/login': {
     render: renderLoginPage,
     init: initLoginPage
+  },
+  '/register': {
+    render: renderRegisterPage,
+    init: initRegisterPage
   },
   '/dashboard': {
     render: renderDashboardPage,

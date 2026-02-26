@@ -1,0 +1,63 @@
+<section class="register-page d-flex align-items-center justify-content-center">
+  <div class="register-card w-100">
+    <header class="mb-4">
+      <h1 class="register-title mb-2">Create Account</h1>
+      <p class="register-subtitle mb-0">Join SportSpot and start booking your next class.</p>
+    </header>
+
+    <form id="register-form" novalidate>
+      <div class="form-floating mb-3">
+        <input type="text" class="form-control" id="register-full-name" placeholder="Full Name" required minlength="2" autocomplete="name" />
+        <label for="register-full-name">Full Name</label>
+      </div>
+
+      <div class="form-floating mb-3">
+        <input type="email" class="form-control" id="register-email" placeholder="name@example.com" required autocomplete="email" />
+        <label for="register-email">Email address</label>
+      </div>
+
+      <div class="form-floating mb-3">
+        <input type="tel" class="form-control" id="register-phone" placeholder="Phone Number" required autocomplete="tel" />
+        <label for="register-phone">Phone Number</label>
+      </div>
+
+      <div class="form-floating mb-3">
+        <input
+          type="password"
+          class="form-control"
+          id="register-password"
+          placeholder="Password"
+          required
+          minlength="6"
+          autocomplete="new-password"
+        />
+        <label for="register-password">Password</label>
+        <button
+          type="button"
+          id="register-password-toggle"
+          class="register-password-toggle"
+          aria-label="Show password"
+          aria-controls="register-password"
+          aria-pressed="false"
+        >
+          <i class="bi bi-eye" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <div class="register-password-strength mb-3" aria-hidden="true">
+        <div id="register-password-strength-fill" class="register-password-strength-fill"></div>
+      </div>
+
+      <div id="register-feedback" class="small mb-3" aria-live="polite"></div>
+
+      <button type="submit" id="register-submit" class="btn btn-primary w-100 register-submit-btn" aria-live="polite">
+        <span class="register-submit-label">Create Account</span>
+      </button>
+    </form>
+
+    <p class="register-login-link text-center mb-0 mt-4">
+      Already have an account?
+      <a href="/login" data-link>Sign In</a>
+    </p>
+  </div>
+</section>

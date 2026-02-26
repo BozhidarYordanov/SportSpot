@@ -1,0 +1,143 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+.register-page {
+  min-height: calc(100dvh - var(--register-header-height, 0px) - var(--register-footer-height, 0px) - 3rem);
+  padding: 1.5rem 1rem;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(129, 140, 248, 0.3), transparent 38%),
+    radial-gradient(circle at 88% 10%, rgba(236, 72, 153, 0.2), transparent 35%),
+    radial-gradient(circle at 50% 88%, rgba(79, 70, 229, 0.2), transparent 45%),
+    linear-gradient(145deg, #f8fbff 0%, #eef2ff 48%, #f9fafb 100%);
+  border-radius: 24px;
+}
+
+.register-card {
+  max-width: 460px;
+  padding: clamp(1.5rem, 2.8vw, 2.5rem);
+  border-radius: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+}
+
+.register-title {
+  font-family: 'Plus Jakarta Sans', var(--bs-font-sans-serif);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #111827;
+}
+
+.register-subtitle {
+  color: #475569;
+}
+
+.register-card .form-floating > .form-control {
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  background-color: rgba(255, 255, 255, 0.94);
+  min-height: 3.5rem;
+  padding-left: 1rem;
+}
+
+.register-card #register-password {
+  padding-right: 2.9rem;
+}
+
+.register-card .form-floating > label {
+  padding-left: 1rem;
+  color: #64748b;
+}
+
+.register-card .form-control:focus {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.2);
+}
+
+.register-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.85rem;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  line-height: 1;
+  padding: 0.25rem;
+  z-index: 5;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.register-password-toggle:hover,
+.register-password-toggle:focus-visible {
+  color: #4f46e5;
+  transform: translateY(-50%) scale(1.08);
+}
+
+.register-password-strength {
+  height: 4px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.register-password-strength-fill {
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: #cbd5e1;
+  transition: width 0.25s ease, background-color 0.25s ease;
+}
+
+.register-submit-btn {
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(100deg, #4f46e5 0%, #6366f1 45%, #9333ea 100%);
+  color: #ffffff;
+  min-height: 3rem;
+  font-weight: 700;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.register-submit-btn:hover,
+.register-submit-btn:focus-visible {
+  transform: scale(1.03);
+  box-shadow: 0 14px 30px rgba(79, 70, 229, 0.26);
+}
+
+.register-submit-btn:active,
+.register-submit-btn:not(:disabled):not(.disabled):active {
+  transform: scale(0.97);
+  filter: brightness(0.95);
+}
+
+.register-submit-btn:disabled {
+  opacity: 0.9;
+  cursor: progress;
+}
+
+.register-login-link {
+  color: #64748b;
+}
+
+.register-login-link a {
+  color: #4f46e5;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.register-login-link a:hover,
+.register-login-link a:focus-visible {
+  text-decoration: underline;
+}
+
+@media (max-width: 575.98px) {
+  .register-page {
+    padding: 0.75rem;
+  }
+
+  .register-card {
+    border-radius: 24px;
+  }
+}
