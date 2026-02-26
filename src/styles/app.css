@@ -1,54 +1,109 @@
 :root {
   --theme-accent: #6366f1;
-  --btn-accent: var(--theme-accent);
-  --btn-accent-soft: color-mix(in srgb, var(--btn-accent) 75%, white);
-  --btn-accent-strong: color-mix(in srgb, var(--btn-accent) 80%, #1e1b4b);
-  --btn-accent-gradient: linear-gradient(100deg, var(--btn-accent-strong) 0%, var(--btn-accent) 45%, var(--btn-accent-soft) 100%);
-  --btn-primary-border: color-mix(in srgb, var(--btn-accent) 78%, #1e1b4b);
+  --btn-gradient-primary: var(--accent-gradient, linear-gradient(100deg, #4f46e5 0%, #6366f1 45%, #9333ea 100%));
+  --btn-border-dark: rgba(15, 23, 42, 0.24);
+  --btn-border-dark-hover: rgba(15, 23, 42, 0.4);
   --btn-text-dark: var(--text-primary, #1a1a1b);
 }
 
-.btn-custom {
+.btn {
   border-radius: 999px;
   font-weight: 600;
   letter-spacing: 0.01em;
   border: 1px solid transparent;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, filter 0.2s ease-in-out, background-color 0.2s ease-in-out;
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
 }
 
-.btn-custom:hover,
-.btn-custom:focus-visible {
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.18);
+.btn:hover,
+.btn:focus-visible {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.14);
 }
 
-.btn-custom:active {
-  transform: scale(0.98);
+.btn:active {
+  transform: scale(0.96);
   box-shadow: 0 6px 14px rgba(15, 23, 42, 0.12);
 }
 
-.btn-custom-primary {
-  color: #ffffff;
-  background: var(--btn-accent-gradient);
+.btn:focus,
+.btn:active,
+.btn:focus:active,
+.btn-check:focus + .btn,
+.btn-check:active + .btn,
+.btn-check:checked + .btn,
+.show > .btn.dropdown-toggle {
+  outline: none;
+  box-shadow: none;
 }
 
-.btn-custom-primary:hover,
-.btn-custom-primary:focus-visible,
-.btn-custom-primary:active {
+.btn-primary {
   color: #ffffff;
+  background: var(--btn-gradient-primary);
+  border: 0;
 }
 
-.btn-custom-secondary {
+.btn-primary:hover,
+.btn-primary:focus-visible,
+.btn-primary:active,
+.btn-primary:focus,
+.btn-primary:not(:disabled):not(.disabled):active,
+.btn-check:focus + .btn-primary,
+.btn-check:active + .btn-primary,
+.btn-check:checked + .btn-primary,
+.show > .btn-primary.dropdown-toggle {
+  color: #ffffff;
+  background: var(--btn-gradient-primary);
+  border: 0;
+}
+
+.btn-primary:active,
+.btn-primary:not(:disabled):not(.disabled):active,
+.btn-check:active + .btn-primary,
+.btn-check:checked + .btn-primary,
+.show > .btn-primary.dropdown-toggle {
+  filter: brightness(0.9);
+}
+
+.btn-outline-secondary,
+.btn-secondary {
   color: var(--btn-text-dark);
   background: transparent;
-  border-color: rgba(15, 23, 42, 0.2);
+  border: 1px solid var(--btn-border-dark);
 }
 
-.btn-custom-secondary:hover,
-.btn-custom-secondary:focus-visible,
-.btn-custom-secondary:active {
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus-visible,
+.btn-outline-secondary:active,
+.btn-secondary:hover,
+.btn-secondary:focus-visible,
+.btn-secondary:active,
+.btn-outline-secondary:focus,
+.btn-outline-secondary:not(:disabled):not(.disabled):active,
+.btn-check:focus + .btn-outline-secondary,
+.btn-check:active + .btn-outline-secondary,
+.btn-check:checked + .btn-outline-secondary,
+.show > .btn-outline-secondary.dropdown-toggle,
+.btn-secondary:focus,
+.btn-secondary:not(:disabled):not(.disabled):active,
+.btn-check:focus + .btn-secondary,
+.btn-check:active + .btn-secondary,
+.btn-check:checked + .btn-secondary,
+.show > .btn-secondary.dropdown-toggle {
   color: var(--btn-text-dark);
-  border-color: rgba(15, 23, 42, 0.35);
-  background: rgba(255, 255, 255, 0.75);
+  background: transparent;
+  border-color: var(--btn-border-dark-hover);
+}
+
+.btn-outline-secondary:active,
+.btn-outline-secondary:not(:disabled):not(.disabled):active,
+.btn-check:active + .btn-outline-secondary,
+.btn-check:checked + .btn-outline-secondary,
+.show > .btn-outline-secondary.dropdown-toggle,
+.btn-secondary:active,
+.btn-secondary:not(:disabled):not(.disabled):active,
+.btn-check:active + .btn-secondary,
+.btn-check:checked + .btn-secondary,
+.show > .btn-secondary.dropdown-toggle {
+  background: rgba(99, 102, 241, 0.1);
 }

@@ -36,6 +36,7 @@ Use HTML, CSS and vanilla JavaScript to create a clean and intuitive user interf
 - **Spacing**: Implement generous white space (padding/margin) to give the content "room to breathe" (follow the 8px grid system).
 - **Typography**: Use a high-quality sans-serif font like 'Inter' or 'Plus Jakarta Sans'. Set headings to font-weight: 700 and use letter-spacing: -0.02em for a premium look.
 - **Icons**: Use thin or duotone icons from Bootstrap Icons for a more sophisticated feel.
+- **Default Bootstrap gray**: Never use default Bootstrap gray (#6c757d) for active or hover states. Use brand-aligned color shifts (brightness or opacity) and scale transforms for feedback.
 
 ## Pages and Navigation
 1. Split the app into multiple pages: login, registration, home, class details, booking, and user profile. This will help to organize the content and provide a clear structure for users to navigate through the app.
