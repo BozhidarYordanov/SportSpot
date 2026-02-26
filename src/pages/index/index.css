@@ -133,12 +133,48 @@ body {
 }
 
 .difficulty-badge {
-  background: linear-gradient(120deg, #111827 0%, #334155 100%);
-  color: #ffffff;
-  border-radius: 999px;
-  padding: 0.45rem 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 50px;
+  padding: 0.28rem 0.62rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.01em;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.difficulty-indicator {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 0.16rem;
+}
+
+.difficulty-indicator-bar {
+  width: 0.2rem;
+  height: 0.62rem;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.28;
+}
+
+.difficulty-indicator-bar.is-active {
+  opacity: 1;
+}
+
+.difficulty-badge--easy {
+  background: rgba(34, 197, 94, 0.14);
+  color: #166534;
+}
+
+.difficulty-badge--intermediate {
+  background: rgba(245, 158, 11, 0.16);
+  color: #92400e;
+}
+
+.difficulty-badge--advanced {
+  background: rgba(244, 63, 94, 0.14);
+  color: #9f1239;
 }
 
 .animate-in {
