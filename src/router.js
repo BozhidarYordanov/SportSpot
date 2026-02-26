@@ -1,11 +1,23 @@
-import { renderHeader } from './components/header/header';
+import { renderHeader, initHeader } from './components/header/header';
 import { renderFooter } from './components/footer/footer';
 import { renderIndexPage, initIndexPage } from './pages/index/index';
+import { renderLoginPage, initLoginPage } from './pages/login/login';
+import { renderDashboardPage, initDashboardPage } from './pages/dashboard/dashboard';
+
+let currentAppElement = null;
 
 const routes = {
   '/': {
     render: renderIndexPage,
     init: initIndexPage
+  },
+  '/login': {
+    render: renderLoginPage,
+    init: initLoginPage
+  },
+  '/dashboard': {
+    render: renderDashboardPage,
+    init: initDashboardPage
   }
 };
 
@@ -28,6 +40,7 @@ const renderLayout = (appElement, path) => {
     ${renderFooter()}
   `;
 
+  initHeader();
   route.init();
 };
 
@@ -43,7 +56,16 @@ const navigate = (appElement, path, replace = false) => {
   renderLayout(appElement, resolvedPath);
 };
 
+export const navigateTo = (path, replace = false) => {
+  if (!currentAppElement) {
+    return;
+  }
+
+  navigate(currentAppElement, path, replace);
+};
+
 export const initRouter = (appElement) => {
+  currentAppElement = appElement;
   const initialPath = resolvePath(window.location.pathname || '/');
   renderLayout(appElement, initialPath);
 
@@ -65,6 +87,6 @@ export const initRouter = (appElement) => {
     }
 
     event.preventDefault();
-    navigate(appElement, href);
+    navigateTo(href);
   });
 };
