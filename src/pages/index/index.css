@@ -1,3 +1,11 @@
-.hero-card {
-  border-radius: 1rem;
+.hero-banner {
+  background: linear-gradient(135deg, var(--bs-light) 0%, var(--bs-body-bg) 100%);
+}
+
+.activity-card {
+  transition: transform 0.2s ease;
+}
+
+.activity-card:hover {
+  transform: translateY(-2px);
 }
