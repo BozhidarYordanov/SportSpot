@@ -1,0 +1,31 @@
+.dashboard-page {
+  background:
+    radial-gradient(circle at 15% 15%, rgba(129, 140, 248, 0.25), transparent 35%),
+    radial-gradient(circle at 88% 12%, rgba(236, 72, 153, 0.18), transparent 35%),
+    linear-gradient(145deg, #ffffff 0%, #f7f8ff 50%, #ffffff 100%);
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-card {
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.dashboard-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  color: #4f46e5;
+}
+
+.dashboard-title {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.dashboard-subtitle {
+  color: #475569;
+}
