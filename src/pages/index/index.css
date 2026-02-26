@@ -161,6 +161,10 @@ body {
 }
 
 @media (max-width: 991.98px) {
+  .hero-media {
+    min-height: 0;
+  }
+
   .why-us-section,
   .top-classes-section {
     padding: 1rem;
