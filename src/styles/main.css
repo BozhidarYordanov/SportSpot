@@ -1,5 +1,8 @@
 :root {
   color-scheme: light;
+  --text-primary: #1a1a1b;
+  --surface-soft: #f8fafc;
+  --accent-gradient: linear-gradient(100deg, #4f46e5 0%, #6366f1 45%, #9333ea 100%);
 }
 
 html,
@@ -8,6 +11,7 @@ body {
 }
 
 body {
+  color: var(--text-primary);
   min-height: 100vh;
   display: flex;
   flex-direction: column;

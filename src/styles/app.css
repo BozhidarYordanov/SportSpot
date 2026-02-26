@@ -1,0 +1,54 @@
+:root {
+  --theme-accent: #6366f1;
+  --btn-accent: var(--theme-accent);
+  --btn-accent-soft: color-mix(in srgb, var(--btn-accent) 75%, white);
+  --btn-accent-strong: color-mix(in srgb, var(--btn-accent) 80%, #1e1b4b);
+  --btn-accent-gradient: linear-gradient(100deg, var(--btn-accent-strong) 0%, var(--btn-accent) 45%, var(--btn-accent-soft) 100%);
+  --btn-primary-border: color-mix(in srgb, var(--btn-accent) 78%, #1e1b4b);
+  --btn-text-dark: var(--text-primary, #1a1a1b);
+}
+
+.btn-custom {
+  border-radius: 999px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border: 1px solid transparent;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.btn-custom:hover,
+.btn-custom:focus-visible {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.18);
+}
+
+.btn-custom:active {
+  transform: scale(0.98);
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.12);
+}
+
+.btn-custom-primary {
+  color: #ffffff;
+  background: var(--btn-accent-gradient);
+}
+
+.btn-custom-primary:hover,
+.btn-custom-primary:focus-visible,
+.btn-custom-primary:active {
+  color: #ffffff;
+}
+
+.btn-custom-secondary {
+  color: var(--btn-text-dark);
+  background: transparent;
+  border-color: rgba(15, 23, 42, 0.2);
+}
+
+.btn-custom-secondary:hover,
+.btn-custom-secondary:focus-visible,
+.btn-custom-secondary:active {
+  color: var(--btn-text-dark);
+  border-color: rgba(15, 23, 42, 0.35);
+  background: rgba(255, 255, 255, 0.75);
+}

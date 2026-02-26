@@ -2,7 +2,8 @@
 
 body {
   font-family: 'Plus Jakarta Sans', var(--bs-font-sans-serif);
-  background: #f7f8fc;
+  background: var(--surface-soft);
+  color: var(--text-primary);
 }
 
 .hero-banner {
@@ -29,7 +30,7 @@ body {
 }
 
 .text-gradient {
-  background: linear-gradient(100deg, #4f46e5 0%, #9333ea 45%, #ec4899 100%);
+  background: var(--accent-gradient);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -37,25 +38,70 @@ body {
 
 .hero-media {
   min-height: 320px;
-}
-
-.hero-image {
-  border-radius: 24px;
-  min-height: 320px;
-  object-fit: cover;
-  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.16);
+  display: flex;
+  justify-content: flex-end;
+  align-items: end;
 }
 
 .featured-card {
-  position: absolute;
-  right: 1rem;
-  bottom: 1rem;
-  max-width: 270px;
-  border: 1px solid rgba(255, 255, 255, 0.65);
+  position: relative;
+  margin-left: auto;
+  width: 100%;
+  max-width: 320px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
   background: rgba(255, 255, 255, 0.65);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  color: var(--text-primary);
+}
+
+.featured-card h2 {
+  color: var(--text-primary);
+}
+
+.featured-eyebrow {
+  color: #334155;
+}
+
+.featured-meta {
+  color: #1e293b;
+}
+
+.why-us-section,
+.top-classes-section {
+  background: var(--surface-soft);
+  border: 1px solid #edf1f7;
+  border-radius: 24px;
+  padding: 1.25rem;
+}
+
+.why-us-section .activity-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.why-us-section .activity-card h3::before {
+  content: '';
+  width: 0.72rem;
+  height: 0.72rem;
+  border-radius: 999px;
+  background: var(--accent-gradient);
+  box-shadow: 0 6px 14px rgba(99, 102, 241, 0.35);
+  flex-shrink: 0;
+}
+
+@media (min-width: 992px) {
+  .hero-primary-col {
+    flex: 0 0 70%;
+    width: 70%;
+  }
+
+  .hero-secondary-col {
+    flex: 0 0 30%;
+    width: 30%;
+  }
 }
 
 .social-proof-section,
@@ -115,9 +161,13 @@ body {
 }
 
 @media (max-width: 991.98px) {
+  .why-us-section,
+  .top-classes-section {
+    padding: 1rem;
+  }
+
   .featured-card {
-    position: static;
-    margin-top: 0.75rem;
+    margin-top: 0.5rem;
     max-width: 100%;
   }
 }
