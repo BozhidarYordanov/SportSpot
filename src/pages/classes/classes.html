@@ -1,0 +1,60 @@
+<section class="classes-page rounded-5 p-3 p-md-4 p-xl-5">
+  <header class="classes-hero rounded-4 p-4 p-md-5 mb-4">
+    <p class="classes-eyebrow mb-2">Class Browsing</p>
+    <h1 class="classes-title mb-2">Find your next workout</h1>
+    <p class="classes-subtitle mb-0">Use search and difficulty filters to quickly discover sessions that match your pace.</p>
+  </header>
+
+  <section class="classes-filter-wrap mb-4" aria-label="Filter classes">
+    <div class="classes-filter-card rounded-4 p-3 p-md-4">
+      <div class="row g-3 g-lg-4 align-items-end">
+        <div class="col-12 col-lg-6">
+          <label for="classes-search" class="form-label classes-filter-label">Search by title</label>
+          <div class="input-group classes-search-group">
+            <span class="input-group-text"><i class="bi bi-search" aria-hidden="true"></i></span>
+            <input
+              id="classes-search"
+              type="search"
+              class="form-control"
+              placeholder="Try: Yoga, Pilates, Boxing..."
+              autocomplete="off"
+            />
+          </div>
+        </div>
+
+        <div class="col-12 col-lg-6">
+          <p class="classes-filter-label mb-2">Difficulty</p>
+          <div class="classes-chip-group" role="group" aria-label="Filter by difficulty level">
+            <label class="classes-chip">
+              <input type="checkbox" value="1" data-difficulty-filter />
+              <span>Easy</span>
+            </label>
+            <label class="classes-chip">
+              <input type="checkbox" value="2" data-difficulty-filter />
+              <span>Intermediate</span>
+            </label>
+            <label class="classes-chip">
+              <input type="checkbox" value="3" data-difficulty-filter />
+              <span>Advanced</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="classes-results" aria-live="polite">
+    <div class="d-flex flex-wrap justify-content-between gap-2 align-items-center mb-3">
+      <p id="classes-feedback" class="mb-0 text-danger d-none"></p>
+      <p id="classes-results-meta" class="classes-results-meta mb-0 ms-auto"></p>
+    </div>
+
+    <div id="classes-grid" class="row g-3 g-md-4 classes-grid"></div>
+
+    <div id="classes-empty" class="classes-empty rounded-4 p-4 p-md-5 text-center d-none">
+      <h2 class="h4 mb-2">No classes found</h2>
+      <p class="text-secondary mb-4">Try broadening your search or reset filters to see all available classes.</p>
+      <button id="classes-reset-btn" type="button" class="btn btn-primary px-4">Reset Filters</button>
+    </div>
+  </section>
+</section>

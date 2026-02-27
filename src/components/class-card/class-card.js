@@ -82,13 +82,29 @@ const renderActionMarkup = (actionConfig = null) => {
   `;
 };
 
+const renderLinkBounds = (linkHref = '', hasAction = false) => {
+  if (!linkHref || hasAction) {
+    return { linkStart: '', linkEnd: '' };
+  }
+
+  return {
+    linkStart: `<a class="class-card-link" href="${escapeHtml(linkHref)}" aria-label="Open class details">`,
+    linkEnd: '</a>'
+  };
+};
+
 export const renderClassCard = (workoutClass, options = {}) => {
+  const columnClass = options.columnClass || 'col-md-6 col-xl-3';
   const category = escapeHtml(workoutClass.category || inferCategory(workoutClass.title));
   const title = escapeHtml(workoutClass.title);
   const metaText = escapeHtml(workoutClass.description || `${Number(workoutClass.duration_minutes) || 45} min`);
   const actionMarkup = renderActionMarkup(options.action);
+  const { linkStart, linkEnd } = renderLinkBounds(options.linkHref, Boolean(options.action));
 
   return classCardTemplate
+    .replace('{{columnClass}}', escapeHtml(columnClass))
+    .replace('{{linkStart}}', linkStart)
+    .replace('{{linkEnd}}', linkEnd)
     .replace('{{category}}', category)
     .replace('{{title}}', title)
     .replace('{{meta}}', metaText)

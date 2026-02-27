@@ -1,7 +1,38 @@
 .class-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   transition: all 0.3s ease;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
   border: 1px solid #f0f0f0;
+}
+
+.class-card-top {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.class-card-meta {
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.class-card-link {
+  display: block;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+}
+
+.class-card-link:focus-visible {
+  outline: 2px solid rgba(79, 70, 229, 0.5);
+  outline-offset: 5px;
+  border-radius: 18px;
 }
 
 .class-card:hover {
@@ -12,7 +43,11 @@
 .difficulty-badge {
   display: inline-flex;
   align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  align-self: flex-start;
   gap: 0.4rem;
+  margin-top: auto;
   border-radius: 50px;
   padding: 0.28rem 0.62rem;
   font-size: 0.75rem;

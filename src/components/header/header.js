@@ -35,7 +35,9 @@ const setHeaderActions = (isAuthenticated) => {
 	});
 };
 
-export const renderHeader = () => `
+const getNavLinkClass = (isActive) => `nav-link${isActive ? ' active' : ''}`;
+
+export const renderHeader = (currentPath = '/') => `
 	<header class="main-header border-bottom bg-white">
 		<nav class="navbar navbar-expand-lg container py-3">
 			<a class="navbar-brand fw-semibold" href="/" data-link>SportSpot</a>
@@ -53,7 +55,10 @@ export const renderHeader = () => `
 			<div class="collapse navbar-collapse" id="main-nav">
 				<ul class="navbar-nav ms-auto mb-2 mb-lg-0 gap-lg-2 me-lg-3">
 					<li class="nav-item">
-						<a class="nav-link active" href="/" data-link>Home</a>
+						<a class="${getNavLinkClass(currentPath === '/')}" href="/" data-link>Home</a>
+					</li>
+					<li class="nav-item">
+						<a class="${getNavLinkClass(currentPath === '/classes')}" href="/classes" data-link>Classes</a>
 					</li>
 				</ul>
 				<div class="d-flex align-items-center gap-2" id="header-auth-actions">
