@@ -49,16 +49,17 @@
   <template id="schedule-session-template">
     <article class="schedule-session-item rounded-4 p-3 p-md-4">
       <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
-        <div>
+        <div class="schedule-session-content">
           <p class="schedule-session-time mb-1" data-session-time></p>
           <h3 class="schedule-session-title mb-1" data-session-title></h3>
-          <p class="schedule-session-meta mb-0 text-secondary">
+          <p class="schedule-session-meta mb-1 text-secondary">
             <span data-session-trainer></span>
             <span class="mx-1">•</span>
             <span data-session-room></span>
           </p>
+          <div class="schedule-session-difficulty" data-session-difficulty></div>
         </div>
-        <div class="text-start text-md-end d-grid gap-2">
+        <div class="schedule-session-actions text-start text-md-end d-grid gap-2">
           <span class="schedule-session-spots" data-session-spots></span>
           <span class="schedule-session-status d-none" data-session-status>Booked</span>
           <button type="button" class="btn btn-primary" data-session-action>Reserve</button>
@@ -71,6 +72,7 @@
     <article class="schedule-upcoming-item rounded-4 p-3">
       <p class="schedule-upcoming-time mb-1" data-upcoming-time></p>
       <p class="schedule-upcoming-title mb-1" data-upcoming-title></p>
+      <div class="schedule-upcoming-difficulty mb-2" data-upcoming-difficulty></div>
       <p class="schedule-upcoming-meta mb-0 text-secondary" data-upcoming-meta></p>
     </article>
   </template>

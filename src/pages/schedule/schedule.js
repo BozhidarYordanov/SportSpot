@@ -2,6 +2,7 @@ import './schedule.css';
 import scheduleTemplate from './schedule.html?raw';
 import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
 import { navigateTo } from '../../router';
+import { renderDifficultyBadge } from '../../components/difficulty-badge/difficulty-badge';
 
 const DAYS_VISIBLE = 12;
 const WEEK_SHIFT_DAYS = 7;
@@ -178,6 +179,7 @@ function renderSessionCards() {
     const titleElement = clone.querySelector('[data-session-title]');
     const trainerElement = clone.querySelector('[data-session-trainer]');
     const roomElement = clone.querySelector('[data-session-room]');
+    const difficultyElement = clone.querySelector('[data-session-difficulty]');
     const spotsElement = clone.querySelector('[data-session-spots]');
     const statusElement = clone.querySelector('[data-session-status]');
     const actionButton = clone.querySelector('[data-session-action]');
@@ -190,8 +192,12 @@ function renderSessionCards() {
     titleElement.textContent = workoutTitle;
     trainerElement.textContent = sessionRow.trainer_name || 'Trainer TBC';
     roomElement.textContent = sessionRow.room || 'Room TBC';
-    spotsElement.textContent = `${availableSpots} spot${availableSpots === 1 ? '' : 's'} available`;
 
+    if (difficultyElement) {
+      difficultyElement.innerHTML = renderDifficultyBadge(sessionRow?.workout_type?.difficulty_level, { fallbackLevel: 2 });
+    }
+
+    spotsElement.textContent = `${availableSpots} spot${availableSpots === 1 ? '' : 's'} available`;
     actionButton.setAttribute('data-schedule-id', sessionRow.id);
 
     if (isBooked) {
@@ -244,7 +250,7 @@ async function fetchSessionsForSelectedDate() {
 
   const { data, error } = await supabase
     .from('schedule')
-    .select('id, start_time, trainer_name, room, capacity, enrolled_count, workout_type:workout_types(title)')
+    .select('id, start_time, trainer_name, room, capacity, enrolled_count, workout_type:workout_types(title, difficulty_level)')
     .gte('start_time', lowerBound)
     .lt('start_time', dayEnd.toISOString())
     .order('start_time', { ascending: true });
@@ -355,7 +361,7 @@ async function loadUpcomingReservations() {
 
   const { data: scheduleRows, error: scheduleError } = await supabase
     .from('schedule')
-    .select('id, trainer_name, room, workout_type:workout_types(title)')
+    .select('id, trainer_name, room, workout_type:workout_types(title, difficulty_level)')
     .in('id', scheduleIds);
 
   if (scheduleError) {
@@ -368,7 +374,8 @@ async function loadUpcomingReservations() {
       {
         trainerName: row.trainer_name,
         room: row.room,
-        title: row?.workout_type?.title || 'Workout Session'
+        title: row?.workout_type?.title || 'Workout Session',
+        difficultyLevel: row?.workout_type?.difficulty_level
       }
     ])
   );
@@ -380,6 +387,7 @@ async function loadUpcomingReservations() {
     const clone = template.content.cloneNode(true);
     const timeElement = clone.querySelector('[data-upcoming-time]');
     const titleElement = clone.querySelector('[data-upcoming-title]');
+    const difficultyElement = clone.querySelector('[data-upcoming-difficulty]');
     const metaElement = clone.querySelector('[data-upcoming-meta]');
 
     const sessionDate = new Date(bookingRow.start_time);
@@ -392,6 +400,11 @@ async function loadUpcomingReservations() {
       minute: '2-digit'
     });
     titleElement.textContent = detail.title || 'Workout Session';
+
+    if (difficultyElement) {
+      difficultyElement.innerHTML = renderDifficultyBadge(detail.difficultyLevel, { fallbackLevel: 2 });
+    }
+
     metaElement.textContent = `${detail.trainerName || 'Trainer TBC'} • ${detail.room || 'Room TBC'}`;
 
     fragment.append(clone);

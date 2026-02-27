@@ -136,6 +136,7 @@
 }
 
 .schedule-session-item {
+  position: relative;
   border: 1px solid #f0f0f0;
   background: rgba(255, 255, 255, 0.84);
   transition: all 0.3s ease;
@@ -162,6 +163,19 @@
   letter-spacing: -0.01em;
 }
 
+.schedule-session-actions {
+  padding-top: 2.15rem;
+}
+
+.schedule-upcoming-difficulty {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  display: inline-flex;
+  margin: 0 !important;
+  z-index: 1;
+}
+
 .schedule-session-spots {
   display: inline-flex;
   justify-content: center;
@@ -185,9 +199,11 @@
 }
 
 .schedule-upcoming-item {
+  position: relative;
   border: 1px solid #f0f0f0;
   background: rgba(255, 255, 255, 0.86);
   transition: all 0.3s ease;
+  padding-right: 8.25rem !important;
 }
 
 .schedule-upcoming-item:hover {
