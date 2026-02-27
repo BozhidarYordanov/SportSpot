@@ -58,7 +58,7 @@ export const renderHeader = (currentPath = '/') => `
 						<a class="${getNavLinkClass(currentPath === '/')}" href="/" data-link>Home</a>
 					</li>
 					<li class="nav-item">
-						<a class="${getNavLinkClass(currentPath === '/classes')}" href="/classes" data-link>Classes</a>
+						<a class="${getNavLinkClass(currentPath === '/classes' || currentPath.startsWith('/class-details/'))}" href="/classes" data-link>Classes</a>
 					</li>
 				</ul>
 				<div class="d-flex align-items-center gap-2" id="header-auth-actions">

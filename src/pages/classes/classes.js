@@ -4,6 +4,7 @@ import { createClassCard } from '../../components/class-card/class-card';
 import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
 
 const FILTER_TRANSITION_MS = 160;
+const CLASS_DETAILS_NOTICE_KEY = 'classes_notice';
 
 const state = {
   workouts: [],
@@ -67,9 +68,9 @@ const filterWorkouts = (workouts) => {
   });
 };
 
-const buildClassDetailsLink = (workoutId) => {
-  const encodedId = encodeURIComponent(workoutId);
-  return `/class-details?id=${encodedId}`;
+const buildClassDetailsLink = (slug) => {
+  const encodedSlug = encodeURIComponent(String(slug || '').trim());
+  return `/class-details/${encodedSlug}`;
 };
 
 const renderCards = (workouts) => {
@@ -98,7 +99,7 @@ const renderCards = (workouts) => {
           },
           {
             columnClass: 'col-12 col-md-6 col-lg-4 col-xxl-3',
-            linkHref: buildClassDetailsLink(workout.id)
+            linkHref: buildClassDetailsLink(workout.slug)
           }
         )
       )
@@ -167,6 +168,17 @@ const bindFilterEvents = () => {
   resetButton?.addEventListener('click', resetFilters);
 };
 
+const consumeClassesNotice = () => {
+  const message = window.sessionStorage.getItem(CLASS_DETAILS_NOTICE_KEY);
+
+  if (!message) {
+    return;
+  }
+
+  window.sessionStorage.removeItem(CLASS_DETAILS_NOTICE_KEY);
+  setFeedback(message, true);
+};
+
 const loadWorkouts = async () => {
   if (!isSupabaseConfigured || !supabase) {
     setFeedback(
@@ -180,7 +192,7 @@ const loadWorkouts = async () => {
 
   const { data, error } = await supabase
     .from('workout_types')
-    .select('id, title, description, duration_minutes, difficulty_level')
+    .select('id, slug, title, description, duration_minutes, difficulty_level')
     .order('title', { ascending: true });
 
   if (error) {
@@ -197,4 +209,5 @@ const loadWorkouts = async () => {
 export const initClassesPage = async () => {
   bindFilterEvents();
   await loadWorkouts();
+  consumeClassesNotice();
 };

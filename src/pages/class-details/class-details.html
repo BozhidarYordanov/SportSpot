@@ -1,0 +1,78 @@
+<section class="class-details-page rounded-5 p-3 p-md-4 p-xl-5">
+  <header class="class-details-hero rounded-4 p-4 p-md-5 mb-4 position-relative overflow-hidden">
+    <p class="class-details-eyebrow mb-2">Class Details</p>
+    <h1 id="class-details-title" class="class-details-title mb-2">Loading class…</h1>
+    <p id="class-details-subtitle" class="class-details-subtitle mb-0">Preparing your workout details.</p>
+  </header>
+
+  <p id="class-details-feedback" class="mb-3 d-none" aria-live="polite"></p>
+
+  <div id="class-details-content" class="row g-4 g-xl-5 d-none">
+    <div class="col-12 col-xl-8">
+      <div class="class-details-main d-grid gap-4">
+        <article class="class-details-card rounded-4 p-4 p-md-5">
+          <h2 class="h4 mb-3">What is this workout?</h2>
+          <p id="class-details-description-long" class="mb-0 text-secondary"></p>
+        </article>
+
+        <article class="class-details-card rounded-4 p-4">
+          <h2 class="h5 mb-3">Suitable For</h2>
+          <ul id="class-details-suitable-for" class="class-details-feature-list list-unstyled mb-0"></ul>
+        </article>
+
+        <article class="class-details-card rounded-4 p-4">
+          <h2 class="h5 mb-3">What to Bring</h2>
+          <ul id="class-details-what-to-bring" class="class-details-feature-list list-unstyled mb-0"></ul>
+        </article>
+      </div>
+    </div>
+
+    <aside class="col-12 col-xl-4">
+      <section class="class-details-sidebar rounded-4 p-4 p-md-5 h-100">
+        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+          <div>
+            <p class="class-details-sidebar-eyebrow mb-1">Upcoming Sessions</p>
+          </div>
+          <span class="class-details-pill"><span id="class-details-duration">—</span> • <span id="class-details-difficulty">—</span></span>
+        </div>
+
+        <div id="class-details-sessions-list" class="class-details-sessions d-grid gap-3"></div>
+        <p id="class-details-sessions-empty" class="class-details-sessions-empty text-secondary mb-0 d-none">
+          No upcoming sessions for this class right now.
+        </p>
+      </section>
+    </aside>
+  </div>
+
+  <template id="class-details-session-template">
+    <article class="class-details-session-card rounded-4 p-3 p-md-4">
+      <div class="class-details-session-head mb-2">
+        <p class="class-details-session-time mb-1" data-session-time></p>
+        <p class="class-details-session-meta mb-0 text-secondary">
+          <span data-session-trainer></span>
+          <span class="mx-1">•</span>
+          <span data-session-room></span>
+        </p>
+      </div>
+      <div class="d-flex justify-content-between align-items-center gap-3">
+        <p class="class-details-session-spots mb-0" data-session-spots></p>
+        <button type="button" class="btn btn-primary px-4 class-details-session-reserve" data-session-reserve>
+          Reserve
+        </button>
+      </div>
+    </article>
+  </template>
+
+  <div id="class-details-confetti" class="class-details-confetti d-none" aria-hidden="true"></div>
+
+  <div id="class-details-success-overlay" class="class-details-success-overlay d-none" role="status" aria-live="polite">
+    <div class="class-details-success-card rounded-4 p-4 text-center">
+      <div class="class-details-success-check" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          <path d="M20.285 6.709a1 1 0 0 1 .006 1.414l-9.192 9.272a1 1 0 0 1-1.422.002L3.71 11.45a1 1 0 1 1 1.414-1.414l5.245 5.245 8.484-8.56a1 1 0 0 1 1.432-.012z"></path>
+        </svg>
+      </div>
+      <p class="mb-0 fw-semibold">Booking confirmed!</p>
+    </div>
+  </div>
+</section>

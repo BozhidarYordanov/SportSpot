@@ -5,6 +5,7 @@ import { renderLoginPage, initLoginPage } from './pages/login/login';
 import { renderRegisterPage, initRegisterPage } from './pages/register/register';
 import { renderDashboardPage, initDashboardPage } from './pages/dashboard/dashboard';
 import { renderClassesPage, initClassesPage } from './pages/classes/classes';
+import { renderClassDetailsPage, initClassDetailsPage } from './pages/class-details/class-details';
 
 let currentAppElement = null;
 
@@ -28,19 +29,81 @@ const routes = {
   '/classes': {
     render: renderClassesPage,
     init: initClassesPage
+  },
+  '/class-details/:slug': {
+    render: renderClassDetailsPage,
+    init: initClassDetailsPage
   }
 };
 
 const resolvePath = (path) => {
-  if (path === '') {
+  const normalizedPath = String(path || '').trim();
+
+  if (normalizedPath === '') {
     return '/';
   }
 
-  return path.startsWith('/') ? path : `/${path}`;
+  const withLeadingSlash = normalizedPath.startsWith('/') ? normalizedPath : `/${normalizedPath}`;
+
+  if (withLeadingSlash.length > 1 && withLeadingSlash.endsWith('/')) {
+    return withLeadingSlash.replace(/\/+$/, '');
+  }
+
+  return withLeadingSlash;
+};
+
+const matchPath = (routePath, currentPath) => {
+  const routeParts = routePath.split('/').filter(Boolean);
+  const currentParts = currentPath.split('/').filter(Boolean);
+
+  if (routeParts.length !== currentParts.length) {
+    return null;
+  }
+
+  const params = {};
+
+  for (let index = 0; index < routeParts.length; index += 1) {
+    const routePart = routeParts[index];
+    const currentPart = currentParts[index];
+
+    if (routePart.startsWith(':')) {
+      params[routePart.slice(1)] = decodeURIComponent(currentPart || '');
+      continue;
+    }
+
+    if (routePart !== currentPart) {
+      return null;
+    }
+  }
+
+  return params;
+};
+
+const resolveRoute = (path) => {
+  if (routes[path]) {
+    return {
+      route: routes[path],
+      params: {}
+    };
+  }
+
+  const dynamicRoutePath = Object.keys(routes).find((routePath) => routePath.includes(':') && matchPath(routePath, path));
+
+  if (!dynamicRoutePath) {
+    return {
+      route: routes['/'],
+      params: {}
+    };
+  }
+
+  return {
+    route: routes[dynamicRoutePath],
+    params: matchPath(dynamicRoutePath, path) || {}
+  };
 };
 
 const renderLayout = (appElement, path) => {
-  const route = routes[path] ?? routes['/'];
+  const { route, params } = resolveRoute(path);
 
   appElement.innerHTML = `
     ${renderHeader(path)}
@@ -51,7 +114,7 @@ const renderLayout = (appElement, path) => {
   `;
 
   initHeader();
-  route.init();
+  route.init({ params, path });
 };
 
 const navigate = (appElement, path, replace = false) => {

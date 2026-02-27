@@ -5,6 +5,8 @@ import { renderClassCard } from '../../components/class-card/class-card';
 
 export const renderIndexPage = () => indexTemplate;
 
+const buildClassDetailsLink = (slug) => `/class-details/${encodeURIComponent(String(slug || '').trim())}`;
+
 const renderTopClasses = (classes) => {
 	const topClassesGrid = document.querySelector('#top-classes-grid');
 	const topClassesSection = topClassesGrid?.closest('.top-classes-section');
@@ -29,7 +31,7 @@ const renderTopClasses = (classes) => {
 
 	const cardsMarkup = classes
 		.slice(0, 4)
-		.map(renderClassCard)
+		.map((workoutClass) => renderClassCard(workoutClass, { linkHref: buildClassDetailsLink(workoutClass.slug) }))
 		.filter((cardMarkup) => typeof cardMarkup === 'string' && cardMarkup.trim().length > 0)
 		.join('');
 
@@ -53,7 +55,7 @@ const loadTopClasses = async () => {
 
 	const { data, error } = await supabase
 		.from('workout_types')
-		.select('title, description, duration_minutes, difficulty_level')
+		.select('slug, title, description, duration_minutes, difficulty_level')
 		.order('title', { ascending: true })
 		.limit(4);
 

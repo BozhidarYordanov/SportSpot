@@ -6,6 +6,8 @@ import { navigateTo } from '../../router';
 
 export const renderDashboardPage = () => dashboardTemplate;
 
+const buildClassDetailsLink = (slug) => `/class-details/${encodeURIComponent(String(slug || '').trim())}`;
+
 const formatSessionDateTime = (timestamp) => {
 	if (!timestamp) {
 		return 'Date TBC';
@@ -128,13 +130,14 @@ const renderTrainingBreakdown = (listElement, emptyElement, breakdownItems) => {
 		.join('');
 };
 
-const renderBookingCards = (containerElement, bookings = [], actionFactory = null) => {
+const renderBookingCards = (containerElement, bookings = [], optionsFactory = null) => {
 	if (!containerElement) {
 		return;
 	}
 
 	containerElement.innerHTML = bookings
 		.map((booking) => {
+			const cardOptions = typeof optionsFactory === 'function' ? optionsFactory(booking) || {} : {};
 			const instructorText = booking.trainer_name ? ` • ${booking.trainer_name}` : '';
 			const roomText = booking.room ? ` • ${booking.room}` : '';
 			const cardMeta = `${formatSessionDateTime(booking.start_time)}${instructorText}${roomText}`;
@@ -147,7 +150,8 @@ const renderBookingCards = (containerElement, bookings = [], actionFactory = nul
 					difficulty_level: booking.difficulty_level || 2
 				},
 				{
-					action: typeof actionFactory === 'function' ? actionFactory(booking) : null
+					action: cardOptions.action || null,
+					linkHref: cardOptions.linkHref || ''
 				}
 			);
 		})
@@ -195,7 +199,7 @@ const loadDashboardData = async (userId) => {
 
 	const { data: scheduleRows, error: scheduleError } = await supabase
 		.from('schedule')
-		.select('id, trainer_name, room, workout_type:workout_types(title, duration_minutes, difficulty_level)')
+		.select('id, trainer_name, room, workout_type:workout_types(slug, title, duration_minutes, difficulty_level)')
 		.in('id', scheduleIds);
 
 	if (scheduleError) {
@@ -209,6 +213,7 @@ const loadDashboardData = async (userId) => {
 			return [
 				schedule.id,
 				{
+					slug: workoutType.slug,
 					trainer_name: schedule.trainer_name,
 					room: schedule.room,
 					title: workoutType.title,
@@ -332,14 +337,18 @@ const renderDashboardView = ({ fullName, bookings }) => {
 	}
 
 	renderBookingCards(upcomingListElement, upcomingBookings, (booking) => ({
-		label: 'Cancel Booking',
-		variant: 'outline-secondary',
-		action: 'cancel-booking',
-		bookingId: booking.id,
-		scheduleId: booking.schedule_id
+		action: {
+			label: 'Cancel Booking',
+			variant: 'outline-secondary',
+			action: 'cancel-booking',
+			bookingId: booking.id,
+			scheduleId: booking.schedule_id
+		}
 	}));
 
-	renderBookingCards(historyListElement, historyBookings);
+	renderBookingCards(historyListElement, historyBookings, (booking) => ({
+		linkHref: booking.slug ? buildClassDetailsLink(booking.slug) : ''
+	}));
 	setSectionState(upcomingListElement, upcomingEmptyElement, upcomingBookings);
 	setSectionState(historyListElement, historyEmptyElement, historyBookings);
 };
