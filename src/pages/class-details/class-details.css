@@ -93,6 +93,22 @@
   padding: 0.32rem 0.68rem;
 }
 
+.class-details-pill-group {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
+}
+
+.class-details-pill-group > * {
+  flex-shrink: 0;
+}
+
+.class-details-pill-group .difficulty-badge {
+  margin-top: 0;
+}
+
 .class-details-session-card {
   border: 1px solid #f0f0f0;
   background: rgba(255, 255, 255, 0.86);

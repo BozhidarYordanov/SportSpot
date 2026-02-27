@@ -1,11 +1,6 @@
 import './class-card.css';
 import classCardTemplate from './class-card.html?raw';
-
-const difficultyMetaByLevel = {
-  1: { label: 'Easy', toneClass: 'difficulty-badge--easy' },
-  2: { label: 'Intermediate', toneClass: 'difficulty-badge--intermediate' },
-  3: { label: 'Advanced', toneClass: 'difficulty-badge--advanced' }
-};
+import { renderDifficultyBadge } from '../difficulty-badge/difficulty-badge';
 
 const categoryMappings = [
   { keywords: ['yoga', 'pilates', 'mobility'], category: 'Mind & Body' },
@@ -22,11 +17,6 @@ const escapeHtml = (value) =>
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
 
-const getDifficultyMeta = (level) => {
-  const normalizedLevel = Number(level);
-  return difficultyMetaByLevel[normalizedLevel] ?? difficultyMetaByLevel[2];
-};
-
 const inferCategory = (workoutTitle) => {
   const normalizedTitle = String(workoutTitle || '').toLowerCase();
 
@@ -35,23 +25,6 @@ const inferCategory = (workoutTitle) => {
   );
 
   return mappedCategory?.category || 'Workout';
-};
-
-const renderDifficultyBadge = (difficultyLevel) => {
-  const normalizedLevel = Math.min(3, Math.max(1, Number(difficultyLevel) || 1));
-  const difficultyMeta = getDifficultyMeta(normalizedLevel);
-
-  const barsMarkup = Array.from({ length: 3 }, (_, index) => {
-    const isActive = index < normalizedLevel;
-    return `<span class="difficulty-indicator-bar${isActive ? ' is-active' : ''}"></span>`;
-  }).join('');
-
-  return `
-    <span class="difficulty-badge ${difficultyMeta.toneClass}" aria-label="Difficulty ${difficultyMeta.label}">
-      <span class="difficulty-indicator" aria-hidden="true">${barsMarkup}</span>
-      <span class="difficulty-label">${difficultyMeta.label}</span>
-    </span>
-  `;
 };
 
 const renderActionMarkup = (actionConfig = null) => {

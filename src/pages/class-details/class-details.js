@@ -1,5 +1,6 @@
 import './class-details.css';
 import classDetailsTemplate from './class-details.html?raw';
+import { renderDifficultyBadge } from '../../components/difficulty-badge/difficulty-badge';
 import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
 import { navigateTo } from '../../router';
 
@@ -18,12 +19,6 @@ let currentWorkout = null;
 let upcomingSessions = [];
 
 export const renderClassDetailsPage = () => classDetailsTemplate;
-
-const difficultyLabelByLevel = {
-  1: 'Easy',
-  2: 'Intermediate',
-  3: 'Advanced'
-};
 
 const setFeedback = (message = '', isError = true) => {
   const feedbackElement = document.querySelector('#class-details-feedback');
@@ -365,7 +360,7 @@ const renderClassDetails = (workout) => {
   const subtitleElement = document.querySelector('#class-details-subtitle');
   const descriptionLongElement = document.querySelector('#class-details-description-long');
   const durationElement = document.querySelector('#class-details-duration');
-  const difficultyElement = document.querySelector('#class-details-difficulty');
+  const difficultyBadgeElement = document.querySelector('#class-details-difficulty-badge');
   const contentElement = document.querySelector('#class-details-content');
 
   if (titleElement) {
@@ -394,10 +389,8 @@ const renderClassDetails = (workout) => {
     durationElement.textContent = `${Number(workout.duration_minutes) || 45} min`;
   }
 
-  const difficultyLevel = Number(workout.difficulty_level) || 2;
-
-  if (difficultyElement) {
-    difficultyElement.textContent = difficultyLabelByLevel[difficultyLevel] || difficultyLabelByLevel[2];
+  if (difficultyBadgeElement) {
+    difficultyBadgeElement.innerHTML = renderDifficultyBadge(workout.difficulty_level, { fallbackLevel: 2 });
   }
 
   currentWorkout = workout;
