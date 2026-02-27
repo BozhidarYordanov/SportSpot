@@ -66,7 +66,7 @@ Use HTML, CSS and vanilla JavaScript to create a clean and intuitive user interf
   - **Empty States**: Dashboard elements should prioritize 'Empty States' to guide new users. Always fetch data using the view_bookings_status to ensure correct categorization of past and future sessions.
 - **Class Browsing Page (/classes)**: This page will allow users to browse through available sports classes. It will include filters and search functionality to help users find classes that match their preferences. Each class listing will include a summary of the class details and a link to the class details page.
 - **Class Details Page (/class-details)**: This page will provide detailed information about a specific class, class schedule, and a booking button.
-- **Booking Page (/booking)**: This page will allow users to select a date, choose a time slot, and confirm their reservation. It will also display the user's upcoming reservations.
+- **Schedule Page (/schedule)**: This page will allow users to select a date, choose a class, and confirm their reservation. It will also display the user's upcoming reservations.
 - **User Profile Page (/profile)**: This page will allow users to manage their account information, view their booking history, and update their preferences. It will also include options for users to log out.
 - **Admin Page (/admin)**: If the role is admin, in the header an [Admin] button will be rendered. It is a link to a page, where will be displayed club-wide stats (total bookings for today, new user registrations) and a "Manage Schedule" shortcut.
 - **Navigation Component**: A reusable navigation component that can be included on all pages to provide easy access to key features such as the home page, class browsing, and user profile.
