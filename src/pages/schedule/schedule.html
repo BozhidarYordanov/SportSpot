@@ -1,0 +1,77 @@
+<section class="schedule-page rounded-5 p-3 p-md-4 p-xl-5">
+  <header class="schedule-hero rounded-4 p-4 p-md-5 mb-4">
+    <p class="schedule-eyebrow mb-2">Weekly Rolling Calendar</p>
+    <h1 class="schedule-title mb-2">Book your next training session</h1>
+    <p class="schedule-subtitle mb-0">Switch days quickly and reserve slots in one flow.</p>
+  </header>
+
+  <p id="schedule-feedback" class="mb-3 d-none" aria-live="polite"></p>
+
+  <section class="schedule-calendar rounded-4 p-3 p-md-4 mb-4" aria-label="Weekly date picker">
+    <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+      <button id="schedule-prev-week" type="button" class="btn btn-outline-secondary px-3" aria-label="Show previous week">
+        <i class="bi bi-chevron-left" aria-hidden="true"></i>
+      </button>
+      <p class="schedule-range-label mb-0" id="schedule-range-label"></p>
+      <button id="schedule-next-week" type="button" class="btn btn-outline-secondary px-3" aria-label="Show next week">
+        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <div id="schedule-day-strip" class="schedule-day-strip" role="listbox" aria-label="Choose a date"></div>
+  </section>
+
+  <div class="row g-4">
+    <div class="col-12 col-xl-8">
+      <section class="schedule-sessions-card rounded-4 p-3 p-md-4 h-100">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+          <h2 class="h5 mb-0" id="schedule-selected-date-label">Sessions</h2>
+          <span id="schedule-session-count" class="schedule-pill">0 sessions</span>
+        </div>
+
+        <div id="schedule-sessions-list" class="schedule-sessions-list" aria-live="polite"></div>
+        <p id="schedule-sessions-empty" class="text-secondary mb-0 d-none">No sessions planned for this date yet.</p>
+      </section>
+    </div>
+
+    <aside class="col-12 col-xl-4">
+      <section class="schedule-upcoming-card rounded-4 p-3 p-md-4 h-100">
+        <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+          <h2 class="h6 mb-0">Your Next 7 Days</h2>
+          <span id="schedule-upcoming-count" class="schedule-pill">0</span>
+        </div>
+        <div id="schedule-upcoming-list" class="schedule-upcoming-list"></div>
+        <p id="schedule-upcoming-empty" class="text-secondary mb-0 d-none">No upcoming reservations in the next 7 days.</p>
+      </section>
+    </aside>
+  </div>
+
+  <template id="schedule-session-template">
+    <article class="schedule-session-item rounded-4 p-3 p-md-4">
+      <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+        <div>
+          <p class="schedule-session-time mb-1" data-session-time></p>
+          <h3 class="schedule-session-title mb-1" data-session-title></h3>
+          <p class="schedule-session-meta mb-0 text-secondary">
+            <span data-session-trainer></span>
+            <span class="mx-1">•</span>
+            <span data-session-room></span>
+          </p>
+        </div>
+        <div class="text-start text-md-end d-grid gap-2">
+          <span class="schedule-session-spots" data-session-spots></span>
+          <span class="schedule-session-status d-none" data-session-status>Booked</span>
+          <button type="button" class="btn btn-primary" data-session-action>Reserve</button>
+        </div>
+      </div>
+    </article>
+  </template>
+
+  <template id="schedule-upcoming-item-template">
+    <article class="schedule-upcoming-item rounded-4 p-3">
+      <p class="schedule-upcoming-time mb-1" data-upcoming-time></p>
+      <p class="schedule-upcoming-title mb-1" data-upcoming-title></p>
+      <p class="schedule-upcoming-meta mb-0 text-secondary" data-upcoming-meta></p>
+    </article>
+  </template>
+</section>

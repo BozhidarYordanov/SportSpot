@@ -1,0 +1,226 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+.schedule-page {
+  font-family: 'Plus Jakarta Sans', var(--bs-font-sans-serif);
+  background:
+    radial-gradient(circle at 12% 18%, rgba(129, 140, 248, 0.22), transparent 34%),
+    radial-gradient(circle at 90% 12%, rgba(192, 132, 252, 0.2), transparent 32%),
+    linear-gradient(155deg, rgba(255, 255, 255, 0.98) 0%, rgba(244, 247, 255, 0.96) 50%, rgba(255, 255, 255, 0.99) 100%);
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.schedule-hero,
+.schedule-calendar,
+.schedule-sessions-card,
+.schedule-upcoming-card {
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.schedule-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  background: rgba(79, 70, 229, 0.12);
+  color: #4338ca;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+.schedule-title {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-size: clamp(1.75rem, 4vw, 2.6rem);
+}
+
+.schedule-subtitle {
+  color: #475569;
+  max-width: 65ch;
+}
+
+.schedule-range-label {
+  color: #334155;
+  font-weight: 600;
+}
+
+.schedule-day-strip {
+  display: flex;
+  gap: 0.65rem;
+  overflow-x: auto;
+  padding-bottom: 0.4rem;
+  scrollbar-width: thin;
+}
+
+.schedule-day-strip::-webkit-scrollbar {
+  height: 8px;
+}
+
+.schedule-day-strip::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.35);
+  border-radius: 999px;
+}
+
+.schedule-day-card {
+  border: 1px solid #e4e7ff;
+  background: rgba(255, 255, 255, 0.88);
+  color: #1e293b;
+  border-radius: 16px;
+  min-width: 86px;
+  padding: 0.55rem 0.6rem;
+  text-align: left;
+  transition: all 0.3s ease;
+}
+
+.schedule-day-card:hover,
+.schedule-day-card:focus-visible {
+  transform: translateY(-5px);
+  border-color: rgba(99, 102, 241, 0.7);
+}
+
+.schedule-day-card.is-selected {
+  border-color: transparent;
+  color: #ffffff;
+  background: linear-gradient(130deg, #4f46e5 0%, #6366f1 50%, #7c3aed 100%);
+  box-shadow: 0 14px 28px rgba(79, 70, 229, 0.3);
+}
+
+.schedule-day-dow {
+  display: block;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.schedule-day-date {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.schedule-day-month {
+  display: block;
+  font-size: 0.78rem;
+  opacity: 0.9;
+}
+
+.schedule-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.12);
+  color: #3730a3;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.schedule-sessions-list {
+  display: grid;
+  gap: 0.75rem;
+  opacity: 1;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.schedule-sessions-list.is-updating {
+  opacity: 0.35;
+  transform: translateY(6px);
+}
+
+.schedule-session-item {
+  border: 1px solid #f0f0f0;
+  background: rgba(255, 255, 255, 0.84);
+  transition: all 0.3s ease;
+  animation: scheduleFadeUp 0.3s ease both;
+}
+
+.schedule-session-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+}
+
+.schedule-session-time {
+  color: #4f46e5;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+}
+
+.schedule-session-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.schedule-session-spots {
+  display: inline-flex;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid #e4e7ff;
+  color: #4338ca;
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 0.22rem 0.62rem;
+}
+
+.schedule-session-status {
+  color: #c026d3;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+.schedule-upcoming-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.schedule-upcoming-item {
+  border: 1px solid #f0f0f0;
+  background: rgba(255, 255, 255, 0.86);
+  transition: all 0.3s ease;
+}
+
+.schedule-upcoming-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+}
+
+.schedule-upcoming-time {
+  color: #4f46e5;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.schedule-upcoming-title {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.schedule-upcoming-meta {
+  font-size: 0.86rem;
+}
+
+@keyframes scheduleFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

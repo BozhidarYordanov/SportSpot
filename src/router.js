@@ -6,6 +6,7 @@ import { renderRegisterPage, initRegisterPage } from './pages/register/register'
 import { renderDashboardPage, initDashboardPage } from './pages/dashboard/dashboard';
 import { renderClassesPage, initClassesPage } from './pages/classes/classes';
 import { renderClassDetailsPage, initClassDetailsPage } from './pages/class-details/class-details';
+import { renderSchedulePage, initSchedulePage } from './pages/schedule/schedule';
 
 let currentAppElement = null;
 
@@ -29,6 +30,10 @@ const routes = {
   '/classes': {
     render: renderClassesPage,
     init: initClassesPage
+  },
+  '/schedule': {
+    render: renderSchedulePage,
+    init: initSchedulePage
   },
   '/class-details/:slug': {
     render: renderClassDetailsPage,
