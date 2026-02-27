@@ -17,6 +17,7 @@ const bulletIconSvg = `
 
 let currentWorkout = null;
 let upcomingSessions = [];
+let bookedScheduleIds = new Set();
 
 export const renderClassDetailsPage = () => classDetailsTemplate;
 
@@ -97,7 +98,7 @@ const setSessionsEmptyState = (showEmpty) => {
   emptyElement.classList.toggle('d-none', !showEmpty);
 };
 
-const renderSessions = (sessions) => {
+const renderSessions = (sessions, bookedIds = new Set()) => {
   const listElement = document.querySelector('#class-details-sessions-list');
   const template = document.querySelector('#class-details-session-template');
 
@@ -124,6 +125,7 @@ const renderSessions = (sessions) => {
     const spotsElement = clone.querySelector('[data-session-spots]');
     const reserveButton = clone.querySelector('[data-session-reserve]');
     const availableSpots = getAvailableSpots(session);
+    const isBooked = bookedIds.has(session.id);
 
     timeElement.textContent = formatSessionDateTime(session.start_time);
     trainerElement.textContent = session.trainer_name || 'Trainer TBC';
@@ -131,8 +133,15 @@ const renderSessions = (sessions) => {
     spotsElement.textContent = `${availableSpots} spot${availableSpots === 1 ? '' : 's'} available`;
 
     reserveButton.setAttribute('data-schedule-id', session.id);
+    reserveButton.setAttribute('data-booked', isBooked ? 'true' : 'false');
 
-    if (availableSpots <= 0) {
+    if (isBooked) {
+      reserveButton.classList.remove('btn-primary', 'btn-outline-secondary', 'is-loading', 'is-reserved');
+      reserveButton.classList.add('btn-outline-danger');
+      reserveButton.textContent = 'Cancel Booking';
+    }
+
+    if (!isBooked && availableSpots <= 0) {
       reserveButton.disabled = true;
       reserveButton.classList.add('btn-outline-secondary');
       reserveButton.classList.remove('btn-primary');
@@ -158,25 +167,35 @@ const setSessionButtonLoading = (buttonElement, isLoading) => {
   buttonElement.disabled = isLoading;
   buttonElement.classList.toggle('is-loading', isLoading);
 
+  const isBooked = buttonElement.getAttribute('data-booked') === 'true';
+
   if (isLoading) {
-    buttonElement.innerHTML = '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Reserving...';
+    buttonElement.innerHTML = isBooked
+      ? '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Cancelling...'
+      : '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Reserving...';
     return;
   }
 
-  if (!buttonElement.classList.contains('is-reserved')) {
-    buttonElement.textContent = 'Reserve';
-  }
+  buttonElement.textContent = isBooked ? 'Cancel Booking' : 'Reserve';
 };
 
-const markSessionReserved = (buttonElement) => {
+const setSessionBookedState = (buttonElement, isBooked) => {
   if (!buttonElement) {
     return;
   }
 
-  buttonElement.disabled = true;
-  buttonElement.classList.remove('btn-primary', 'is-loading');
-  buttonElement.classList.add('btn-success', 'is-reserved');
-  buttonElement.textContent = 'Reserved';
+  buttonElement.disabled = false;
+  buttonElement.classList.remove('btn-primary', 'btn-outline-danger', 'is-loading', 'is-reserved');
+  buttonElement.setAttribute('data-booked', isBooked ? 'true' : 'false');
+
+  if (isBooked) {
+    buttonElement.classList.add('btn-outline-danger');
+    buttonElement.textContent = 'Cancel Booking';
+    return;
+  }
+
+  buttonElement.classList.add('btn-primary');
+  buttonElement.textContent = 'Reserve';
 };
 
 const runConfetti = () => {
@@ -304,6 +323,60 @@ const reserveSchedule = async (scheduleId) => {
   }
 };
 
+const cancelSchedule = async (scheduleId) => {
+  if (!currentWorkout?.id || !scheduleId) {
+    setFeedback('Class data is not ready yet. Please refresh and try again.');
+    return;
+  }
+
+  const {
+    data: { session }
+  } = await supabase.auth.getSession();
+
+  if (!session?.user?.id) {
+    navigateTo('/login');
+    return;
+  }
+
+  const { error: cancelError } = await supabase
+    .from('bookings')
+    .delete()
+    .eq('schedule_id', scheduleId)
+    .eq('user_id', session.user.id);
+
+  if (cancelError) {
+    throw cancelError;
+  }
+};
+
+const loadBookedScheduleIds = async (scheduleIds = []) => {
+  const uniqueScheduleIds = [...new Set(scheduleIds.filter(Boolean))];
+
+  if (uniqueScheduleIds.length === 0) {
+    return new Set();
+  }
+
+  const {
+    data: { session }
+  } = await supabase.auth.getSession();
+
+  if (!session?.user?.id) {
+    return new Set();
+  }
+
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('schedule_id')
+    .eq('user_id', session.user.id)
+    .in('schedule_id', uniqueScheduleIds);
+
+  if (error) {
+    throw error;
+  }
+
+  return new Set((Array.isArray(data) ? data : []).map((booking) => booking.schedule_id).filter(Boolean));
+};
+
 const loadUpcomingSessions = async (workoutTypeId) => {
   const nowIso = new Date().toISOString();
 
@@ -336,6 +409,7 @@ const bindSessionBookingActions = () => {
     }
 
     const scheduleId = reserveButton.getAttribute('data-schedule-id');
+    const isBooked = reserveButton.getAttribute('data-booked') === 'true';
 
     if (!scheduleId || reserveButton.disabled) {
       return;
@@ -345,12 +419,20 @@ const bindSessionBookingActions = () => {
     setSessionButtonLoading(reserveButton, true);
 
     try {
-      await reserveSchedule(scheduleId);
-      markSessionReserved(reserveButton);
-      showSuccessAndRedirect();
+      if (isBooked) {
+        await cancelSchedule(scheduleId);
+        bookedScheduleIds.delete(scheduleId);
+        setSessionBookedState(reserveButton, false);
+        setFeedback('Booking cancelled.', false);
+      } else {
+        await reserveSchedule(scheduleId);
+        bookedScheduleIds.add(scheduleId);
+        setSessionBookedState(reserveButton, true);
+        showSuccessAndRedirect();
+      }
     } catch (error) {
       setSessionButtonLoading(reserveButton, false);
-      setFeedback(error?.message || 'Unable to reserve this class right now. Please try again.');
+      setFeedback(error?.message || 'Unable to update booking right now. Please try again.');
     }
   });
 };
@@ -408,8 +490,10 @@ const loadWorkoutBySlug = async (slug) => {
   renderClassDetails(data);
 
   const sessions = await loadUpcomingSessions(data.id);
+  const sessionsIds = sessions.map((session) => session.id);
+  bookedScheduleIds = await loadBookedScheduleIds(sessionsIds);
   upcomingSessions = sessions;
-  renderSessions(upcomingSessions);
+  renderSessions(upcomingSessions, bookedScheduleIds);
 };
 
 export const initClassDetailsPage = async ({ params } = {}) => {

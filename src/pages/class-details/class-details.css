@@ -110,6 +110,9 @@
 }
 
 .class-details-session-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   border: 1px solid #f0f0f0;
   background: rgba(255, 255, 255, 0.86);
   backdrop-filter: blur(10px);
@@ -130,6 +133,14 @@
   font-size: 0.92rem;
 }
 
+.class-details-session-footer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
 .class-details-session-spots {
   color: rgba(25, 135, 84, 0.95);
   font-weight: 600;
@@ -137,7 +148,7 @@
 }
 
 .class-details-session-reserve {
-  min-width: 110px;
+  width: 100%;
   transition: all 0.3s ease;
 }
 
