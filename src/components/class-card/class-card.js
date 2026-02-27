@@ -37,14 +37,15 @@ const renderActionMarkup = (actionConfig = null) => {
     variant = 'primary',
     action = 'reserve',
     bookingId = '',
-    scheduleId = ''
+    scheduleId = '',
+    className = ''
   } = actionConfig;
 
   return `
     <div class="class-card-action">
       <button
         type="button"
-        class="btn btn-${escapeHtml(variant)}"
+        class="btn btn-${escapeHtml(variant)} ${escapeHtml(className).trim()}"
         data-card-action="${escapeHtml(action)}"
         data-booking-id="${escapeHtml(bookingId)}"
         data-schedule-id="${escapeHtml(scheduleId)}"

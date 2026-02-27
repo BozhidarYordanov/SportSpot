@@ -107,3 +107,19 @@
 .show > .btn-secondary.dropdown-toggle {
   background: rgba(99, 102, 241, 0.1);
 }
+
+.btn-cancel-booking {
+  border: 1px solid #dc3545;
+  color: #dc3545;
+  background: #ffffff;
+}
+
+.btn-cancel-booking:hover,
+.btn-cancel-booking:focus-visible,
+.btn-cancel-booking:active,
+.btn-cancel-booking:focus,
+.btn-cancel-booking:not(:disabled):not(.disabled):active {
+  border-color: #dc3545;
+  color: #dc3545;
+  background: rgba(220, 53, 69, 0.08);
+}

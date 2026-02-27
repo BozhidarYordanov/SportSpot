@@ -137,14 +137,14 @@ const renderSessions = (sessions, bookedIds = new Set()) => {
 
     if (isBooked) {
       reserveButton.classList.remove('btn-primary', 'btn-outline-secondary', 'is-loading', 'is-reserved');
-      reserveButton.classList.add('btn-outline-danger');
+      reserveButton.classList.add('btn-outline-danger', 'btn-cancel-booking');
       reserveButton.textContent = 'Cancel Booking';
     }
 
     if (!isBooked && availableSpots <= 0) {
       reserveButton.disabled = true;
       reserveButton.classList.add('btn-outline-secondary');
-      reserveButton.classList.remove('btn-primary');
+      reserveButton.classList.remove('btn-primary', 'btn-cancel-booking');
       reserveButton.textContent = 'Full';
     }
 
@@ -185,11 +185,11 @@ const setSessionBookedState = (buttonElement, isBooked) => {
   }
 
   buttonElement.disabled = false;
-  buttonElement.classList.remove('btn-primary', 'btn-outline-danger', 'is-loading', 'is-reserved');
+  buttonElement.classList.remove('btn-primary', 'btn-outline-danger', 'btn-cancel-booking', 'is-loading', 'is-reserved');
   buttonElement.setAttribute('data-booked', isBooked ? 'true' : 'false');
 
   if (isBooked) {
-    buttonElement.classList.add('btn-outline-danger');
+    buttonElement.classList.add('btn-outline-danger', 'btn-cancel-booking');
     buttonElement.textContent = 'Cancel Booking';
     return;
   }

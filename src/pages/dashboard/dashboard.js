@@ -340,6 +340,7 @@ const renderDashboardView = ({ fullName, bookings }) => {
 		action: {
 			label: 'Cancel Booking',
 			variant: 'outline-secondary',
+			className: 'btn-cancel-booking',
 			action: 'cancel-booking',
 			bookingId: booking.id,
 			scheduleId: booking.schedule_id
