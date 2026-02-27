@@ -67,6 +67,21 @@ const loadTopClasses = async () => {
 };
 
 export const initIndexPage = async () => {
+	const getStartedButton = document.querySelector('#hero-get-started-btn');
+	let isAuthenticated = false;
+
+	if (isSupabaseConfigured && supabase) {
+		const {
+			data: { session }
+		} = await supabase.auth.getSession();
+
+		isAuthenticated = Boolean(session?.user);
+	}
+
+	if (getStartedButton) {
+		getStartedButton.style.display = isAuthenticated ? 'none' : '';
+	}
+
 	const topClasses = await loadTopClasses();
 	renderTopClasses(topClasses);
 };
