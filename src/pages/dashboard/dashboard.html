@@ -1,7 +1,59 @@
-<section class="dashboard-page rounded-5 p-4 p-md-5">
-  <div class="dashboard-card rounded-4 p-4 p-md-5">
+<section class="dashboard-page rounded-5 p-3 p-md-4 p-xl-5">
+  <header class="dashboard-glass-card rounded-4 p-4 p-md-5 mb-4 mb-lg-5">
     <p class="dashboard-eyebrow mb-2">Dashboard</p>
-    <h1 class="dashboard-title mb-3">Welcome to your fitness hub</h1>
-    <p class="dashboard-subtitle mb-0">Track upcoming bookings and keep your training momentum going.</p>
+    <h1 class="dashboard-title mb-2">Welcome back, <span id="dashboard-user-name">Athlete</span></h1>
+    <p class="dashboard-subtitle mb-0">Your personalized training hub for bookings, history, and momentum.</p>
+    <p id="dashboard-feedback" class="mt-3 mb-0 d-none"></p>
+  </header>
+
+  <div id="dashboard-empty-state" class="dashboard-glass-card rounded-4 p-4 p-md-5 text-center d-none">
+    <h2 class="h3 mb-2">Welcome to SportSpot 👋</h2>
+    <p class="mb-4 text-secondary">Your schedule is clear right now. Book your first class and start building your routine.</p>
+    <button type="button" class="btn btn-primary btn-lg px-4" id="dashboard-empty-cta">Book Your First Class</button>
+  </div>
+
+  <div id="dashboard-content-grid" class="dashboard-grid row g-4 g-xl-5 align-items-start">
+    <aside class="col-12 col-lg-4">
+      <div class="dashboard-sidebar d-grid gap-4">
+        <article class="dashboard-glass-card rounded-4 p-4">
+          <p class="dashboard-card-label mb-1">Quick Actions</p>
+          <h2 class="h5 mb-3">Ready for your next workout?</h2>
+          <button type="button" class="btn btn-primary btn-lg w-100" id="dashboard-book-class-btn">Book a New Class</button>
+        </article>
+
+        <article class="dashboard-glass-card rounded-4 p-4">
+          <p class="dashboard-card-label mb-1">Statistics</p>
+          <h2 class="h5 mb-3">Workouts this Month</h2>
+          <p class="dashboard-stat-value mb-1" id="dashboard-workouts-month">0</p>
+          <p class="text-secondary mb-0">Sessions scheduled in the current month.</p>
+        </article>
+      </div>
+    </aside>
+
+    <div class="col-12 col-lg-8">
+      <div class="dashboard-main d-grid gap-4">
+        <section class="dashboard-glass-card rounded-4 p-4 p-md-5">
+          <div class="d-flex flex-wrap justify-content-between gap-2 align-items-center mb-3">
+            <h2 class="h4 mb-0">Upcoming Bookings</h2>
+            <span class="dashboard-section-pill">Next sessions</span>
+          </div>
+          <div id="dashboard-upcoming-list" class="row g-3"></div>
+          <p id="dashboard-upcoming-empty" class="dashboard-section-empty text-secondary mb-0 d-none">
+            No upcoming bookings yet. Your next class is one click away.
+          </p>
+        </section>
+
+        <section class="dashboard-glass-card rounded-4 p-4 p-md-5">
+          <div class="d-flex flex-wrap justify-content-between gap-2 align-items-center mb-3">
+            <h2 class="h4 mb-0">Workout History</h2>
+            <span class="dashboard-section-pill">Last 3 sessions</span>
+          </div>
+          <div id="dashboard-history-list" class="row g-3"></div>
+          <p id="dashboard-history-empty" class="dashboard-section-empty text-secondary mb-0 d-none">
+            Completed sessions will appear here as you keep training.
+          </p>
+        </section>
+      </div>
+    </div>
   </div>
 </section>

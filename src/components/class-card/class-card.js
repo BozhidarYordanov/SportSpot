@@ -54,14 +54,46 @@ const renderDifficultyBadge = (difficultyLevel) => {
   `;
 };
 
-export const renderClassCard = (workoutClass) => {
+const renderActionMarkup = (actionConfig = null) => {
+  if (!actionConfig || typeof actionConfig !== 'object') {
+    return '';
+  }
+
+  const {
+    label = 'Reserve',
+    variant = 'primary',
+    action = 'reserve',
+    bookingId = '',
+    scheduleId = ''
+  } = actionConfig;
+
+  return `
+    <div class="class-card-action">
+      <button
+        type="button"
+        class="btn btn-${escapeHtml(variant)}"
+        data-card-action="${escapeHtml(action)}"
+        data-booking-id="${escapeHtml(bookingId)}"
+        data-schedule-id="${escapeHtml(scheduleId)}"
+      >
+        ${escapeHtml(label)}
+      </button>
+    </div>
+  `;
+};
+
+export const renderClassCard = (workoutClass, options = {}) => {
   const category = escapeHtml(workoutClass.category || inferCategory(workoutClass.title));
   const title = escapeHtml(workoutClass.title);
   const metaText = escapeHtml(workoutClass.description || `${Number(workoutClass.duration_minutes) || 45} min`);
+  const actionMarkup = renderActionMarkup(options.action);
 
   return classCardTemplate
     .replace('{{category}}', category)
     .replace('{{title}}', title)
     .replace('{{meta}}', metaText)
-    .replace('{{difficultyBadge}}', renderDifficultyBadge(workoutClass.difficulty_level));
+    .replace('{{difficultyBadge}}', renderDifficultyBadge(workoutClass.difficulty_level))
+    .replace('{{action}}', actionMarkup);
 };
+
+export const createClassCard = renderClassCard;

@@ -53,3 +53,11 @@
   background: rgba(244, 63, 94, 0.14);
   color: #9f1239;
 }
+
+.class-card-action {
+  margin-top: 1rem;
+}
+
+.class-card-action .btn {
+  width: 100%;
+}

@@ -59,14 +59,11 @@ Use HTML, CSS and vanilla JavaScript to create a clean and intuitive user interf
   - **Social Proof**: A section featuring client testimonials or a counter of total classes booked to build trust.
   - **Dynamic Logic**: If the user is authenticated, the "Login" button in the navbar/hero should dynamically change to "Go to Dashboard".
 - **Dashboard (/dashboard)**: The personalized hub for authenticated users. The content adapts based on the user's role (admin vs user).
-
   - **Upcoming Bookings**: A clear list of workouts the user has already signed up for (showing date, time, and instructor).
-
   - **Workout History**: A recap of the last 2-3 completed sessions.
-
   - **Quick Actions**: A prominent "Book a New Class" button that redirects the user directly to the /calendar page.
-
   - **Statistics**: A visual summary (or a small chart) showing how many workouts the user has completed during the current month.
+  - **Empty States**: Dashboard elements should prioritize 'Empty States' to guide new users. Always fetch data using the view_bookings_status to ensure correct categorization of past and future sessions.
 - **Class Browsing Page (/classes)**: This page will allow users to browse through available sports classes. It will include filters and search functionality to help users find classes that match their preferences. Each class listing will include a summary of the class details and a link to the class details page.
 - **Class Details Page (/class-details)**: This page will provide detailed information about a specific class, including the instructor's name, class schedule, location, and a booking button.
 - **Booking Page (/booking)**: This page will allow users to select a date, choose a time slot, and confirm their reservation. It will also display the user's upcoming reservations.
