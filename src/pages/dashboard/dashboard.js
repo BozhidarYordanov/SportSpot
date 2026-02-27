@@ -59,6 +59,75 @@ const isInCurrentMonth = (timestamp) => {
 	return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
 };
 
+const escapeHtml = (value) =>
+	String(value ?? '')
+		.replaceAll('&', '&amp;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;')
+		.replaceAll('"', '&quot;')
+		.replaceAll("'", '&#39;');
+
+const getTrainingBreakdown = (pastBookings = []) => {
+	if (!Array.isArray(pastBookings) || pastBookings.length === 0) {
+		return [];
+	}
+
+	const categoryCountMap = new Map();
+
+	for (const booking of pastBookings) {
+		const categoryTitle = booking?.title?.trim() || 'Workout';
+		categoryCountMap.set(categoryTitle, (categoryCountMap.get(categoryTitle) || 0) + 1);
+	}
+
+	const sortedBreakdown = [...categoryCountMap.entries()]
+		.map(([title, count]) => ({ title, count }))
+		.sort((left, right) => right.count - left.count)
+		.slice(0, 5);
+
+	const maxCount = sortedBreakdown[0]?.count || 0;
+
+	return sortedBreakdown.map((item) => ({
+		...item,
+		percentage: maxCount > 0 ? Math.round((item.count / maxCount) * 100) : 0
+	}));
+};
+
+const renderTrainingBreakdown = (listElement, emptyElement, breakdownItems) => {
+	if (!listElement || !emptyElement) {
+		return;
+	}
+
+	if (!Array.isArray(breakdownItems) || breakdownItems.length === 0) {
+		listElement.innerHTML = '';
+		listElement.classList.add('d-none');
+		emptyElement.classList.remove('d-none');
+		return;
+	}
+
+	listElement.classList.remove('d-none');
+	emptyElement.classList.add('d-none');
+	listElement.innerHTML = breakdownItems
+		.map(
+			(item, index) => {
+				const barAlpha = Math.max(0.45, 1 - index * 0.12);
+				const sessionLabel = `${item.count} ${item.count === 1 ? 'session' : 'sessions'}`;
+
+				return `
+			<li class="dashboard-breakdown-item">
+			  <div class="dashboard-breakdown-head">
+			    <span class="dashboard-breakdown-title">${escapeHtml(item.title)}</span>
+			    <span class="dashboard-breakdown-badge">${sessionLabel}</span>
+			  </div>
+			  <div class="dashboard-breakdown-track" role="progressbar" aria-label="${escapeHtml(item.title)} frequency" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${item.percentage}">
+			    <span class="dashboard-breakdown-fill" style="width: ${item.percentage}%; --breakdown-alpha: ${barAlpha};"></span>
+			  </div>
+			</li>
+		`;
+			}
+		)
+		.join('');
+};
+
 const renderBookingCards = (containerElement, bookings = [], actionFactory = null) => {
 	if (!containerElement) {
 		return;
@@ -215,6 +284,10 @@ const bindCancelBookingAction = (userId, onRefresh) => {
 const renderDashboardView = ({ fullName, bookings }) => {
 	const userNameElement = document.querySelector('#dashboard-user-name');
 	const workoutsMonthElement = document.querySelector('#dashboard-workouts-month');
+	const totalWorkoutsElement = document.querySelector('#dashboard-total-workouts');
+	const totalWorkoutsSubtextElement = document.querySelector('#dashboard-total-workouts-subtext');
+	const trainingBreakdownListElement = document.querySelector('#dashboard-training-breakdown-list');
+	const trainingBreakdownEmptyElement = document.querySelector('#dashboard-training-breakdown-empty');
 	const emptyStateElement = document.querySelector('#dashboard-empty-state');
 	const contentGridElement = document.querySelector('#dashboard-content-grid');
 	const upcomingListElement = document.querySelector('#dashboard-upcoming-list');
@@ -231,11 +304,24 @@ const renderDashboardView = ({ fullName, bookings }) => {
 		.filter((booking) => booking.session_status === 'past')
 		.sort((left, right) => new Date(right.start_time).getTime() - new Date(left.start_time).getTime())
 		.slice(0, 3);
+	const allPastBookings = bookings.filter((booking) => booking.session_status === 'past');
 	const workoutsThisMonth = bookings.filter((booking) => isInCurrentMonth(booking.start_time)).length;
+	const totalWorkouts = allPastBookings.length;
+	const trainingBreakdown = getTrainingBreakdown(allPastBookings);
 
 	if (workoutsMonthElement) {
 		workoutsMonthElement.textContent = String(workoutsThisMonth);
 	}
+
+	if (totalWorkoutsElement) {
+		totalWorkoutsElement.textContent = String(totalWorkouts);
+	}
+
+	if (totalWorkoutsSubtextElement) {
+		totalWorkoutsSubtextElement.textContent = totalWorkouts > 0 ? 'Completed sessions in your training history.' : 'Your journey starts here!';
+	}
+
+	renderTrainingBreakdown(trainingBreakdownListElement, trainingBreakdownEmptyElement, trainingBreakdown);
 
 	const hasNoBookings = bookings.length === 0;
 	emptyStateElement?.classList.toggle('d-none', !hasNoBookings);
