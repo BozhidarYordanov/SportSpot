@@ -6,19 +6,37 @@ const renderGuestActions = () => `
 	<a class="btn btn-sm btn-primary px-3" href="/register" data-link>Register</a>
 `;
 
-const renderAuthenticatedActions = () => `
-	<a class="btn btn-sm btn-outline-secondary px-3" href="/dashboard" data-link>Dashboard</a>
+const renderAuthenticatedActions = (isDashboardActive) => `
+	<li class="nav-item">
+		<a class="${getNavLinkClass(isDashboardActive)}" href="/dashboard" data-link>Dashboard</a>
+	</li>
+`;
+
+const renderLogoutButton = () => `
 	<button type="button" class="btn btn-sm btn-primary px-3" id="header-logout-btn">Logout</button>
 `;
 
-const setHeaderActions = (isAuthenticated) => {
-	const actionsContainer = document.querySelector('#header-auth-actions');
+const setHeaderActions = (isAuthenticated, currentPath = '/') => {
+	const navList = document.querySelector('.navbar-nav');
+	const logoutContainer = document.querySelector('#header-auth-actions');
 
-	if (!actionsContainer) {
+	if (!navList || !logoutContainer) {
 		return;
 	}
 
-	actionsContainer.innerHTML = isAuthenticated ? renderAuthenticatedActions() : renderGuestActions();
+	// Remove existing Dashboard nav item if present
+	const existingDashboard = navList.querySelector('[href="/dashboard"]');
+	if (existingDashboard) {
+		existingDashboard.closest('.nav-item')?.remove();
+	}
+
+	// Add Dashboard to nav list if authenticated
+	if (isAuthenticated) {
+		navList.insertAdjacentHTML('beforeend', renderAuthenticatedActions(currentPath === '/dashboard'));
+	}
+
+	// Set logout button
+	logoutContainer.innerHTML = isAuthenticated ? renderLogoutButton() : renderGuestActions();
 
 	const logoutButton = document.querySelector('#header-logout-btn');
 
@@ -70,8 +88,10 @@ export const renderHeader = (currentPath = '/') => `
 `;
 
 export const initHeader = async () => {
+	const currentPath = window.location.pathname;
+
 	if (!isSupabaseConfigured || !supabase) {
-		setHeaderActions(false);
+		setHeaderActions(false, currentPath);
 		return;
 	}
 
@@ -79,5 +99,5 @@ export const initHeader = async () => {
 		data: { session }
 	} = await supabase.auth.getSession();
 
-	setHeaderActions(Boolean(session?.user));
+	setHeaderActions(Boolean(session?.user), currentPath);
 };
