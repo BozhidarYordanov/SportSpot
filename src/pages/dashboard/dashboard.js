@@ -145,6 +145,7 @@ const renderBookingCards = (containerElement, bookings = [], optionsFactory = nu
 			return createClassCard(
 				{
 					title: booking.title || 'Workout Session',
+					category: booking.category,
 					description: cardMeta,
 					duration_minutes: booking.duration_minutes || 45,
 					difficulty_level: booking.difficulty_level || 2
@@ -199,7 +200,7 @@ const loadDashboardData = async (userId) => {
 
 	const { data: scheduleRows, error: scheduleError } = await supabase
 		.from('schedule')
-		.select('id, trainer_name, room, workout_type:workout_types(slug, title, duration_minutes, difficulty_level)')
+		.select('id, trainer_name, room, workout_type:workout_types(slug, title, duration_minutes, difficulty_level, category)')
 		.in('id', scheduleIds);
 
 	if (scheduleError) {
@@ -218,7 +219,8 @@ const loadDashboardData = async (userId) => {
 					room: schedule.room,
 					title: workoutType.title,
 					duration_minutes: workoutType.duration_minutes,
-					difficulty_level: workoutType.difficulty_level
+					difficulty_level: workoutType.difficulty_level,
+					category: workoutType.category
 				}
 			];
 		})

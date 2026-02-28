@@ -93,6 +93,7 @@ const renderCards = (workouts) => {
         createClassCard(
           {
             title: workout.title,
+            category: workout.category,
             description: workout.description || `${Number(workout.duration_minutes) || 45} min session`,
             duration_minutes: workout.duration_minutes,
             difficulty_level: workout.difficulty_level
@@ -192,7 +193,7 @@ const loadWorkouts = async () => {
 
   const { data, error } = await supabase
     .from('workout_types')
-    .select('id, slug, title, description, duration_minutes, difficulty_level')
+    .select('id, slug, title, description, duration_minutes, difficulty_level, category')
     .order('title', { ascending: true });
 
   if (error) {
