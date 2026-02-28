@@ -53,11 +53,21 @@ const loadTopClasses = async () => {
 		return [];
 	}
 
-	const { data, error } = await supabase
+	let result = await supabase
 		.from('workout_types')
-		.select('slug, title, description, duration_minutes, difficulty_level')
+		.select('slug, title, description, duration_minutes, difficulty_level, category')
 		.order('title', { ascending: true })
 		.limit(4);
+
+	if (result.error) {
+		result = await supabase
+			.from('workout_types')
+			.select('slug, title, description, duration_minutes, difficulty_level')
+			.order('title', { ascending: true })
+			.limit(4);
+	}
+
+	const { data, error } = result;
 
 	if (error || !Array.isArray(data) || data.length === 0) {
 		return [];

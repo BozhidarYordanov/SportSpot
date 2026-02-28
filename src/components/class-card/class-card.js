@@ -57,7 +57,7 @@ const renderLinkBounds = (linkHref = '', hasAction = false) => {
 
 export const renderClassCard = (workoutClass, options = {}) => {
   const columnClass = options.columnClass || 'col-md-6 col-xl-3';
-  const category = escapeHtml(normalizeCategory(workoutClass.category));
+  const category = escapeHtml(normalizeCategory(workoutClass.workout_category ?? workoutClass.category));
   const title = escapeHtml(workoutClass.title);
   const metaText = escapeHtml(workoutClass.description || `${Number(workoutClass.duration_minutes) || 45} min`);
   const actionMarkup = renderActionMarkup(options.action);
