@@ -11,7 +11,9 @@ const state = {
   userId: null,
   workouts: [],
   sessions: [],
-  activeTab: 'workouts',
+  todayBookings: [],
+  recentRegistrations: [],
+  activeTab: 'bookings',
   selectedWorkoutToDelete: null,
   selectedSessionToDelete: null,
   modals: {
@@ -101,22 +103,31 @@ const formatDateTime = (value) => {
   });
 };
 
-const formatPeakHourLabel = (hourNumber) => {
-  const hour = Number(hourNumber);
+const formatTime = (value) => {
+  const date = new Date(value);
 
-  if (Number.isNaN(hour)) {
+  if (Number.isNaN(date.getTime())) {
     return '—';
   }
 
-  const from = new Date();
-  from.setHours(hour, 0, 0, 0);
+  return date.toLocaleTimeString(undefined, {
+    hour: 'numeric',
+    minute: '2-digit'
+  });
+};
 
-  const to = new Date(from);
-  to.setHours(hour + 1, 0, 0, 0);
+const formatDate = (value) => {
+  const date = new Date(value);
 
-  const fromLabel = from.toLocaleTimeString(undefined, { hour: 'numeric' });
-  const toLabel = to.toLocaleTimeString(undefined, { hour: 'numeric' });
-  return `${fromLabel} - ${toLabel}`;
+  if (Number.isNaN(date.getTime())) {
+    return '—';
+  }
+
+  return date.toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  });
 };
 
 const getCurrentUserRole = async (userId) => {
@@ -285,70 +296,171 @@ const loadUpcomingSessions = async () => {
   renderScheduleRows();
 };
 
-const loadStats = async () => {
+const renderTodayBookingRows = () => {
+  const bodyElement = document.querySelector('#admin-bookings-body');
+  const emptyElement = document.querySelector('#admin-bookings-empty');
+  const totalElement = document.querySelector('#admin-bookings-total');
+
+  if (!bodyElement || !emptyElement || !totalElement) {
+    return;
+  }
+
+  totalElement.textContent = `Total Bookings Today: ${state.todayBookings.length}`;
+
+  if (state.todayBookings.length === 0) {
+    bodyElement.innerHTML = '';
+    emptyElement.classList.remove('d-none');
+    return;
+  }
+
+  emptyElement.classList.add('d-none');
+
+  bodyElement.innerHTML = state.todayBookings
+    .map((booking) => {
+      const userName =
+        booking?.profile?.full_name?.trim() || booking?.guest_name?.trim() || booking?.profile?.email?.trim() || booking?.guest_email?.trim() || 'Guest';
+
+      const workoutTitle = booking?.schedule?.workout_type?.title || 'Workout Session';
+      const status = booking?.status || 'upcoming';
+      const statusLabel = status === 'past' ? 'Completed' : 'Upcoming';
+      const statusClass = status === 'past' ? 'admin-status-past' : 'admin-status-upcoming';
+
+      return `
+        <tr>
+          <td class="fw-semibold">${escapeHtml(userName)}</td>
+          <td>${escapeHtml(workoutTitle)}</td>
+          <td>${escapeHtml(formatTime(booking?.schedule?.start_time))}</td>
+          <td><span class="admin-status-pill ${statusClass}">${escapeHtml(statusLabel)}</span></td>
+        </tr>
+      `;
+    })
+    .join('');
+};
+
+const renderRegistrationData = (counts) => {
+  const registrations24Element = document.querySelector('#admin-registrations-24h');
+  const registrations7Element = document.querySelector('#admin-registrations-7d');
+  const registrations30Element = document.querySelector('#admin-registrations-30d');
+  const registrationsTotalElement = document.querySelector('#admin-registrations-total');
+  const bodyElement = document.querySelector('#admin-registrations-body');
+  const emptyElement = document.querySelector('#admin-registrations-empty');
+
+  if (registrations24Element) {
+    registrations24Element.textContent = String(counts.last24Hours || 0);
+  }
+
+  if (registrations7Element) {
+    registrations7Element.textContent = String(counts.last7Days || 0);
+  }
+
+  if (registrations30Element) {
+    registrations30Element.textContent = String(counts.last30Days || 0);
+  }
+
+  if (registrationsTotalElement) {
+    registrationsTotalElement.textContent = String(counts.lifetimeTotal || 0);
+  }
+
+  if (!bodyElement || !emptyElement) {
+    return;
+  }
+
+  if (state.recentRegistrations.length === 0) {
+    bodyElement.innerHTML = '';
+    emptyElement.classList.remove('d-none');
+    return;
+  }
+
+  emptyElement.classList.add('d-none');
+
+  bodyElement.innerHTML = state.recentRegistrations
+    .map((profileRow) => {
+      const name = profileRow.full_name?.trim() || 'Unnamed User';
+      const email = profileRow.email?.trim() || '—';
+
+      return `
+        <tr>
+          <td class="fw-semibold">${escapeHtml(name)}</td>
+          <td>${escapeHtml(email)}</td>
+          <td>${escapeHtml(formatDate(profileRow.created_at))}</td>
+        </tr>
+      `;
+    })
+    .join('');
+};
+
+const loadTodayBookings = async () => {
   const { startIso, endIso } = getLocalDayRange(new Date());
-  const last30DaysDate = new Date();
-  last30DaysDate.setDate(last30DaysDate.getDate() - 30);
 
-  const [{ count: todayBookingsCount, error: todayBookingsError }, { count: memberGrowthCount, error: memberGrowthError }, { data: peakRows, error: peakError }] =
-    await Promise.all([
-      supabase
-        .from('bookings')
-        .select('id, schedule!inner(start_time)', { count: 'exact', head: true })
-        .gte('schedule.start_time', startIso)
-        .lt('schedule.start_time', endIso),
-      supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', last30DaysDate.toISOString()),
-      supabase.from('bookings').select('schedule!inner(start_time)').limit(5000)
-    ]);
+  const { data, error } = await supabase
+    .from('bookings')
+    .select(
+      'id, user_id, guest_name, guest_email, created_at, schedule!inner(start_time, workout_type:workout_types(title)), profile:profiles!bookings_user_id_fkey(full_name, email)'
+    )
+    .gte('schedule.start_time', startIso)
+    .lt('schedule.start_time', endIso)
+    .order('start_time', { ascending: true, referencedTable: 'schedule' });
 
-  if (todayBookingsError) {
-    throw todayBookingsError;
+  if (error) {
+    throw error;
   }
 
-  if (memberGrowthError) {
-    throw memberGrowthError;
+  const now = Date.now();
+  state.todayBookings = (Array.isArray(data) ? data : []).map((row) => {
+    const scheduleStart = row?.schedule?.start_time;
+    const startTimestamp = scheduleStart ? new Date(scheduleStart).getTime() : Number.NaN;
+
+    return {
+      ...row,
+      status: Number.isNaN(startTimestamp) ? 'upcoming' : startTimestamp < now ? 'past' : 'upcoming'
+    };
+  });
+
+  renderTodayBookingRows();
+};
+
+const loadRegistrationMetrics = async () => {
+  const now = new Date();
+  const last24HoursDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const last7DaysDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const last30DaysDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+  const [last24Response, last7Response, last30Response, lifetimeResponse, recentResponse] = await Promise.all([
+    supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', last24HoursDate.toISOString()),
+    supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', last7DaysDate.toISOString()),
+    supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', last30DaysDate.toISOString()),
+    supabase.from('profiles').select('id', { count: 'exact', head: true }),
+    supabase.from('profiles').select('id, full_name, email, created_at').order('created_at', { ascending: false }).limit(10)
+  ]);
+
+  if (last24Response.error) {
+    throw last24Response.error;
   }
 
-  if (peakError) {
-    throw peakError;
+  if (last7Response.error) {
+    throw last7Response.error;
   }
 
-  const bookingsElement = document.querySelector('#admin-stat-bookings');
-  const growthElement = document.querySelector('#admin-stat-growth');
-  const peakElement = document.querySelector('#admin-stat-peak');
-
-  if (bookingsElement) {
-    bookingsElement.textContent = String(todayBookingsCount || 0);
+  if (last30Response.error) {
+    throw last30Response.error;
   }
 
-  if (growthElement) {
-    growthElement.textContent = String(memberGrowthCount || 0);
+  if (lifetimeResponse.error) {
+    throw lifetimeResponse.error;
   }
 
-  const hourMap = new Map();
-
-  for (const row of peakRows || []) {
-    const startTime = row?.schedule?.start_time;
-
-    if (!startTime) {
-      continue;
-    }
-
-    const date = new Date(startTime);
-
-    if (Number.isNaN(date.getTime())) {
-      continue;
-    }
-
-    const hour = date.getHours();
-    hourMap.set(hour, (hourMap.get(hour) || 0) + 1);
+  if (recentResponse.error) {
+    throw recentResponse.error;
   }
 
-  const peakHourEntry = [...hourMap.entries()].sort((left, right) => right[1] - left[1])[0];
+  state.recentRegistrations = Array.isArray(recentResponse.data) ? recentResponse.data : [];
 
-  if (peakElement) {
-    peakElement.textContent = peakHourEntry ? formatPeakHourLabel(peakHourEntry[0]) : 'No bookings yet';
-  }
+  renderRegistrationData({
+    last24Hours: last24Response.count || 0,
+    last7Days: last7Response.count || 0,
+    last30Days: last30Response.count || 0,
+    lifetimeTotal: lifetimeResponse.count || 0
+  });
 };
 
 const openWorkoutModal = (mode, workoutId = null) => {
@@ -535,6 +647,18 @@ const bindTabSwitching = () => {
 
       if (tabName) {
         switchTab(tabName);
+
+        if (tabName === 'bookings') {
+          loadTodayBookings().catch((error) => {
+            setFeedback('#admin-feedback', error?.message || 'Unable to refresh today\'s bookings.');
+          });
+        }
+
+        if (tabName === 'registrations') {
+          loadRegistrationMetrics().catch((error) => {
+            setFeedback('#admin-feedback', error?.message || 'Unable to refresh registration metrics.');
+          });
+        }
       }
     });
   });
@@ -721,7 +845,7 @@ const bindDeleteWorkout = () => {
 
       state.selectedWorkoutToDelete = null;
       state.modals.deleteWorkout?.hide();
-      await Promise.all([loadWorkoutTypes(), loadStats()]);
+      await Promise.all([loadWorkoutTypes(), loadTodayBookings()]);
       setFeedback('#admin-workouts-feedback', 'Workout deleted successfully.', false);
       showToast('Workout deleted successfully.');
     } catch (error) {
@@ -804,7 +928,7 @@ const bindSessionForm = () => {
       }
 
       state.modals.session?.hide();
-      await Promise.all([loadUpcomingSessions(), loadStats()]);
+      await Promise.all([loadUpcomingSessions(), loadTodayBookings()]);
     } catch (error) {
       setFeedback('#admin-session-feedback', error?.message || 'Unable to save session right now.');
     } finally {
@@ -836,7 +960,7 @@ const bindDeleteSession = () => {
 
       state.selectedSessionToDelete = null;
       state.modals.deleteSession?.hide();
-      await Promise.all([loadUpcomingSessions(), loadStats()]);
+      await Promise.all([loadUpcomingSessions(), loadTodayBookings()]);
       setFeedback('#admin-sessions-feedback', '');
     } catch (error) {
       setFeedback('#admin-sessions-feedback', error?.message || 'Unable to delete session right now.');
@@ -900,7 +1024,7 @@ export const initAdminPage = async () => {
 
   try {
     setFeedback('#admin-feedback', '');
-    await Promise.all([loadStats(), loadWorkoutTypes(), loadUpcomingSessions()]);
+    await Promise.all([loadTodayBookings(), loadRegistrationMetrics(), loadWorkoutTypes(), loadUpcomingSessions()]);
   } catch (error) {
     setFeedback('#admin-feedback', error?.message || 'Unable to load admin data right now.');
   }

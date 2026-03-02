@@ -65,6 +65,7 @@
 
 .admin-tab-nav {
   gap: 0.5rem;
+  padding: 0.35rem;
 }
 
 .admin-tab-nav .nav-link {
@@ -74,6 +75,7 @@
   transition: all 0.3s ease;
   border: 1px solid rgba(79, 70, 229, 0.16);
   background: rgba(255, 255, 255, 0.66);
+  padding: 0.6rem 1rem;
 }
 
 .admin-tab-nav .nav-link:hover {
@@ -85,6 +87,57 @@
   background: linear-gradient(120deg, #4f46e5 0%, #6366f1 70%, #7c3aed 100%);
   color: #ffffff;
   border-color: transparent;
+  box-shadow: 0 10px 22px rgba(79, 70, 229, 0.32);
+}
+
+.admin-tab-panels {
+  min-height: 18rem;
+}
+
+.admin-substat-card {
+  border: 1px solid rgba(255, 255, 255, 0.86);
+  background: rgba(255, 255, 255, 0.74);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.admin-substat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 18px 34px rgba(15, 23, 42, 0.12);
+}
+
+.admin-bookings-total {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #312e81;
+}
+
+.admin-muted-note {
+  color: #475569;
+  font-weight: 500;
+}
+
+.admin-status-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.2rem 0.62rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.admin-status-pill.admin-status-upcoming {
+  background: rgba(79, 70, 229, 0.14);
+  color: #3730a3;
+}
+
+.admin-status-pill.admin-status-past {
+  background: rgba(148, 163, 184, 0.2);
+  color: #334155;
 }
 
 .admin-table-wrap {
