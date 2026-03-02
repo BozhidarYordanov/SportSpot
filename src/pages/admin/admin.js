@@ -1,5 +1,6 @@
 import './admin.css';
 import adminTemplate from './admin.html?raw';
+import { Modal, Toast } from 'bootstrap';
 import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
 import { navigateTo } from '../../router';
 
@@ -12,13 +13,14 @@ const state = {
   sessions: [],
   activeTab: 'workouts',
   selectedWorkoutToDelete: null,
-  selectedSessionToCancel: null,
+  selectedSessionToDelete: null,
   modals: {
-    editWorkout: null,
+    workout: null,
     deleteWorkout: null,
-    addSession: null,
-    cancelSession: null
-  }
+    session: null,
+    deleteSession: null
+  },
+  toast: null
 };
 
 export const renderAdminPage = () => adminTemplate;
@@ -42,6 +44,35 @@ const setFeedback = (selector, message = '', isError = true) => {
   element.classList.toggle('d-none', !message);
   element.classList.toggle('text-danger', Boolean(message) && isError);
   element.classList.toggle('text-success', Boolean(message) && !isError);
+};
+
+const showToast = (message) => {
+  const toastBodyElement = document.querySelector('#admin-toast-body');
+
+  if (!toastBodyElement || !state.toast) {
+    return;
+  }
+
+  toastBodyElement.textContent = message;
+  state.toast.show();
+};
+
+const normalizeSlug = (value) =>
+  String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+const toLocalDateTimeValue = (isoDateTime) => {
+  const date = new Date(isoDateTime);
+
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  const pad = (value) => String(value).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
 
 const getLocalDayRange = (date = new Date()) => {
@@ -86,16 +117,6 @@ const formatPeakHourLabel = (hourNumber) => {
   const fromLabel = from.toLocaleTimeString(undefined, { hour: 'numeric' });
   const toLabel = to.toLocaleTimeString(undefined, { hour: 'numeric' });
   return `${fromLabel} - ${toLabel}`;
-};
-
-const getBootstrapModal = (modalId) => {
-  const modalElement = document.querySelector(`#${modalId}`);
-
-  if (!modalElement || !window.bootstrap?.Modal) {
-    return null;
-  }
-
-  return window.bootstrap.Modal.getOrCreateInstance(modalElement);
 };
 
 const getCurrentUserRole = async (userId) => {
@@ -155,7 +176,7 @@ const renderWorkoutRows = () => {
 
   bodyElement.innerHTML = state.workouts
     .map((workout) => {
-      const description = String(workout.description_long || '').trim();
+      const description = String(workout.description || '').trim();
       const shortDescription = description.length > 120 ? `${description.slice(0, 117)}...` : description;
 
       return `
@@ -163,7 +184,7 @@ const renderWorkoutRows = () => {
           <td class="fw-semibold">${escapeHtml(workout.title || 'Untitled')}</td>
           <td><span class="admin-pill">${escapeHtml(workout.category || 'Other')}</span></td>
           <td>${escapeHtml(workout.difficulty_level || 2)}/3</td>
-          <td class="text-secondary">${escapeHtml(shortDescription || '—')}</td>
+          <td class="text-secondary"><span class="admin-description-clamp">${escapeHtml(shortDescription || '—')}</span></td>
           <td class="text-end">
             <div class="admin-actions justify-content-end">
               <button type="button" class="btn btn-sm btn-outline-primary" data-action="edit-workout" data-id="${workout.id}">Edit</button>
@@ -207,7 +228,8 @@ const renderScheduleRows = () => {
           <td>${Number(sessionRow.enrolled_count || 0)}/${Number(sessionRow.capacity || 0)}</td>
           <td class="text-end">
             <div class="admin-actions justify-content-end">
-              <button type="button" class="btn btn-sm btn-outline-danger" data-action="cancel-session" data-id="${sessionRow.id}">Cancel Session</button>
+              <button type="button" class="btn btn-sm btn-outline-primary" data-action="edit-session" data-id="${sessionRow.id}">Edit</button>
+              <button type="button" class="btn btn-sm btn-outline-danger" data-action="delete-session" data-id="${sessionRow.id}">Delete</button>
             </div>
           </td>
         </tr>
@@ -236,7 +258,7 @@ const renderWorkoutTypeOptions = () => {
 const loadWorkoutTypes = async () => {
   const { data, error } = await supabase
     .from('workout_types')
-    .select('id, title, description_long, category, difficulty_level')
+    .select('id, title, slug, duration_minutes, description, description_long, suitable_for, what_to_bring, category, difficulty_level')
     .order('title', { ascending: true });
 
   if (error) {
@@ -304,6 +326,7 @@ const loadStats = async () => {
   }
 
   const hourMap = new Map();
+
   for (const row of peakRows || []) {
     const startTime = row?.schedule?.start_time;
 
@@ -328,30 +351,88 @@ const loadStats = async () => {
   }
 };
 
-const openEditWorkoutModal = (workoutId) => {
-  const workout = state.workouts.find((item) => item.id === workoutId);
-
-  if (!workout) {
-    return;
-  }
-
+const openWorkoutModal = (mode, workoutId = null) => {
+  const formElement = document.querySelector('#admin-edit-workout-form');
+  const modeInput = document.querySelector('#admin-workout-form-mode');
   const idInput = document.querySelector('#admin-edit-workout-id');
   const titleInput = document.querySelector('#admin-edit-title');
+  const slugInput = document.querySelector('#admin-edit-slug');
+  const durationInput = document.querySelector('#admin-edit-duration');
+  const shortDescriptionInput = document.querySelector('#admin-edit-short-description');
   const descriptionInput = document.querySelector('#admin-edit-description');
+  const suitableForInput = document.querySelector('#admin-edit-suitable-for');
+  const whatToBringInput = document.querySelector('#admin-edit-what-to-bring');
   const categoryInput = document.querySelector('#admin-edit-category');
   const difficultyInput = document.querySelector('#admin-edit-difficulty');
+  const modalTitleElement = document.querySelector('#admin-edit-workout-label');
+  const submitButtonElement = document.querySelector('#admin-save-workout-btn');
 
-  if (!idInput || !titleInput || !descriptionInput || !categoryInput || !difficultyInput) {
+  if (
+    !formElement ||
+    !modeInput ||
+    !idInput ||
+    !titleInput ||
+    !slugInput ||
+    !durationInput ||
+    !shortDescriptionInput ||
+    !descriptionInput ||
+    !suitableForInput ||
+    !whatToBringInput ||
+    !categoryInput ||
+    !difficultyInput
+  ) {
     return;
   }
 
-  idInput.value = workout.id;
-  titleInput.value = workout.title || '';
-  descriptionInput.value = workout.description_long || '';
-  categoryInput.value = CATEGORY_OPTIONS.includes(workout.category) ? workout.category : 'Other';
-  difficultyInput.value = String(workout.difficulty_level || 2);
+  formElement.reset();
+  modeInput.value = mode;
   setFeedback('#admin-edit-workout-feedback', '');
-  state.modals.editWorkout?.show();
+
+  if (mode === 'edit') {
+    const workout = state.workouts.find((item) => item.id === workoutId);
+
+    if (!workout) {
+      return;
+    }
+
+    idInput.value = workout.id;
+    titleInput.value = workout.title || '';
+    slugInput.value = workout.slug || '';
+    durationInput.value = String(workout.duration_minutes || 45);
+    shortDescriptionInput.value = workout.description || '';
+    descriptionInput.value = workout.description_long || '';
+    suitableForInput.value = workout.suitable_for || '';
+    whatToBringInput.value = workout.what_to_bring || '';
+    categoryInput.value = CATEGORY_OPTIONS.includes(workout.category) ? workout.category : 'Other';
+    difficultyInput.value = String(workout.difficulty_level || 2);
+
+    if (modalTitleElement) {
+      modalTitleElement.textContent = 'Edit Workout';
+    }
+
+    if (submitButtonElement) {
+      submitButtonElement.textContent = 'Save Changes';
+    }
+  } else {
+    idInput.value = '';
+    slugInput.value = '';
+    durationInput.value = '45';
+    shortDescriptionInput.value = '';
+    suitableForInput.value = '';
+    whatToBringInput.value = '';
+    categoryInput.value = 'Other';
+    difficultyInput.value = '2';
+
+    if (modalTitleElement) {
+      modalTitleElement.textContent = 'Add New Workout';
+    }
+
+    if (submitButtonElement) {
+      submitButtonElement.textContent = 'Create Workout';
+    }
+  }
+
+  state.modals.workout?.show();
 };
 
 const openDeleteWorkoutModal = (workoutId) => {
@@ -371,22 +452,80 @@ const openDeleteWorkoutModal = (workoutId) => {
   state.modals.deleteWorkout?.show();
 };
 
-const openCancelSessionModal = (sessionId) => {
+const openSessionModal = (mode, sessionId = null) => {
+  const formElement = document.querySelector('#admin-session-form');
+  const modeInput = document.querySelector('#admin-session-form-mode');
+  const idInput = document.querySelector('#admin-session-id');
+  const workoutTypeInput = document.querySelector('#admin-session-workout-type');
+  const startTimeInput = document.querySelector('#admin-session-start-time');
+  const trainerInput = document.querySelector('#admin-session-trainer');
+  const roomInput = document.querySelector('#admin-session-room');
+  const capacityInput = document.querySelector('#admin-session-capacity');
+  const titleElement = document.querySelector('#admin-session-label');
+  const submitButtonElement = document.querySelector('#admin-save-session-btn');
+
+  if (!formElement || !modeInput || !idInput || !workoutTypeInput || !startTimeInput || !trainerInput || !roomInput || !capacityInput) {
+    return;
+  }
+
+  renderWorkoutTypeOptions();
+  formElement.reset();
+  modeInput.value = mode;
+  setFeedback('#admin-session-feedback', '');
+
+  if (mode === 'edit') {
+    const session = state.sessions.find((item) => item.id === sessionId);
+
+    if (!session) {
+      return;
+    }
+
+    idInput.value = session.id;
+    workoutTypeInput.value = session.workout_type_id || '';
+    startTimeInput.value = toLocalDateTimeValue(session.start_time);
+    trainerInput.value = session.trainer_name || '';
+    roomInput.value = session.room || '';
+    capacityInput.value = String(session.capacity || DEFAULT_CAPACITY);
+
+    if (titleElement) {
+      titleElement.textContent = 'Edit Session';
+    }
+
+    if (submitButtonElement) {
+      submitButtonElement.textContent = 'Save Changes';
+    }
+  } else {
+    idInput.value = '';
+    capacityInput.value = String(DEFAULT_CAPACITY);
+
+    if (titleElement) {
+      titleElement.textContent = 'Add New Session';
+    }
+
+    if (submitButtonElement) {
+      submitButtonElement.textContent = 'Create Session';
+    }
+  }
+
+  state.modals.session?.show();
+};
+
+const openDeleteSessionModal = (sessionId) => {
   const session = state.sessions.find((item) => item.id === sessionId);
 
   if (!session) {
     return;
   }
 
-  state.selectedSessionToCancel = session.id;
+  state.selectedSessionToDelete = session.id;
   const title = session?.workout_type?.title || 'Workout Session';
-  const copyElement = document.querySelector('#admin-cancel-session-copy');
+  const copyElement = document.querySelector('#admin-delete-session-copy');
 
   if (copyElement) {
-    copyElement.textContent = `Cancel "${title}" on ${formatDateTime(session.start_time)}?`;
+    copyElement.textContent = `Delete "${title}" on ${formatDateTime(session.start_time)}?`;
   }
 
-  state.modals.cancelSession?.show();
+  state.modals.deleteSession?.show();
 };
 
 const bindTabSwitching = () => {
@@ -423,7 +562,7 @@ const bindTableActions = () => {
     }
 
     if (action === 'edit-workout') {
-      openEditWorkoutModal(id);
+      openWorkoutModal('edit', id);
       return;
     }
 
@@ -432,62 +571,131 @@ const bindTableActions = () => {
       return;
     }
 
-    if (action === 'cancel-session') {
-      openCancelSessionModal(id);
+    if (action === 'edit-session') {
+      openSessionModal('edit', id);
+      return;
+    }
+
+    if (action === 'delete-session') {
+      openDeleteSessionModal(id);
     }
   });
 };
 
-const bindEditWorkoutForm = () => {
+const bindCreateButtons = () => {
+  const addWorkoutButton = document.querySelector('#admin-add-workout-btn');
+  const addSessionButton = document.querySelector('#admin-add-session-btn');
+
+  addWorkoutButton?.addEventListener('click', () => {
+    openWorkoutModal('create');
+  });
+
+  addSessionButton?.addEventListener('click', () => {
+    openSessionModal('create');
+  });
+};
+
+const bindWorkoutForm = () => {
   const formElement = document.querySelector('#admin-edit-workout-form');
 
   formElement?.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     const formData = new FormData(formElement);
-    const workoutId = String(formData.get('id') || document.querySelector('#admin-edit-workout-id')?.value || '').trim();
+    const mode = String(formData.get('mode') || 'edit');
+    const workoutId = String(formData.get('id') || '').trim();
     const title = String(formData.get('title') || '').trim();
+    const slug = normalizeSlug(formData.get('slug'));
+    const durationMinutes = Number(formData.get('duration_minutes') || 0);
+    const shortDescription = String(formData.get('description') || '').trim();
     const descriptionLong = String(formData.get('description_long') || '').trim();
-    const category = String(formData.get('category') || 'Other');
+    const suitableFor = String(formData.get('suitable_for') || '').trim();
+    const whatToBring = String(formData.get('what_to_bring') || '').trim();
+    const category = String(formData.get('category') || 'Other').trim();
     const difficultyLevel = Number(formData.get('difficulty_level') || 2);
 
-    if (!workoutId || !title || !CATEGORY_OPTIONS.includes(category) || ![1, 2, 3].includes(difficultyLevel)) {
-      setFeedback('#admin-edit-workout-feedback', 'Please fill all workout fields correctly.');
+    if (
+      !title ||
+      !slug ||
+      !Number.isInteger(durationMinutes) ||
+      durationMinutes < 1 ||
+      !CATEGORY_OPTIONS.includes(category) ||
+      ![1, 2, 3].includes(difficultyLevel)
+    ) {
+      setFeedback('#admin-edit-workout-feedback', 'Please fill all workout fields correctly, including slug and duration.');
+      return;
+    }
+
+    if (mode === 'edit' && !workoutId) {
+      setFeedback('#admin-edit-workout-feedback', 'Workout id is missing. Please reopen the modal.');
       return;
     }
 
     const saveButton = document.querySelector('#admin-save-workout-btn');
+
     if (saveButton) {
       saveButton.disabled = true;
-      saveButton.textContent = 'Saving...';
+      saveButton.textContent = mode === 'create' ? 'Creating...' : 'Saving...';
     }
 
     setFeedback('#admin-edit-workout-feedback', '');
 
     try {
-      const { error } = await supabase
-        .from('workout_types')
-        .update({
+      if (mode === 'create') {
+        const { error } = await supabase.from('workout_types').insert({
           title,
+          slug,
+          duration_minutes: durationMinutes,
+          description: shortDescription || `${title} class`,
           description_long: descriptionLong || null,
+          suitable_for: suitableFor || null,
+          what_to_bring: whatToBring || null,
           category,
           difficulty_level: difficultyLevel
-        })
-        .eq('id', workoutId);
+        });
 
-      if (error) {
-        throw error;
+        if (error) {
+          throw error;
+        }
+
+        showToast('Workout created successfully.');
+        setFeedback('#admin-workouts-feedback', 'Workout created successfully.', false);
+      } else {
+        const { error } = await supabase
+          .from('workout_types')
+          .update({
+            title,
+            slug,
+            duration_minutes: durationMinutes,
+            description: shortDescription || `${title} class`,
+            description_long: descriptionLong || null,
+            suitable_for: suitableFor || null,
+            what_to_bring: whatToBring || null,
+            category,
+            difficulty_level: difficultyLevel
+          })
+          .eq('id', workoutId);
+
+        if (error) {
+          throw error;
+        }
+
+        showToast('Workout updated successfully.');
+        setFeedback('#admin-workouts-feedback', 'Workout updated successfully.', false);
       }
 
       await loadWorkoutTypes();
-      setFeedback('#admin-workouts-feedback', 'Workout updated successfully.', false);
-      state.modals.editWorkout?.hide();
+      state.modals.workout?.hide();
     } catch (error) {
-      setFeedback('#admin-edit-workout-feedback', error?.message || 'Unable to save workout changes.');
+      if (/duplicate key|unique|slug/i.test(error?.message || '')) {
+        setFeedback('#admin-edit-workout-feedback', 'This slug is already in use. Please choose a different one.');
+      } else {
+        setFeedback('#admin-edit-workout-feedback', error?.message || 'Unable to save workout changes.');
+      }
     } finally {
       if (saveButton) {
         saveButton.disabled = false;
-        saveButton.textContent = 'Save Changes';
+        saveButton.textContent = mode === 'create' ? 'Create Workout' : 'Save Changes';
       }
     }
   });
@@ -513,8 +721,9 @@ const bindDeleteWorkout = () => {
 
       state.selectedWorkoutToDelete = null;
       state.modals.deleteWorkout?.hide();
-      await loadWorkoutTypes();
+      await Promise.all([loadWorkoutTypes(), loadStats()]);
       setFeedback('#admin-workouts-feedback', 'Workout deleted successfully.', false);
+      showToast('Workout deleted successfully.');
     } catch (error) {
       setFeedback('#admin-workouts-feedback', error?.message || 'Unable to delete workout right now.');
     } finally {
@@ -524,105 +733,132 @@ const bindDeleteWorkout = () => {
   });
 };
 
-const bindAddSession = () => {
-  const openButton = document.querySelector('#admin-add-session-btn');
-  const formElement = document.querySelector('#admin-add-session-form');
-
-  openButton?.addEventListener('click', () => {
-    setFeedback('#admin-add-session-feedback', '');
-    formElement?.reset();
-    renderWorkoutTypeOptions();
-    state.modals.addSession?.show();
-  });
+const bindSessionForm = () => {
+  const formElement = document.querySelector('#admin-session-form');
 
   formElement?.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     const formData = new FormData(formElement);
+    const mode = String(formData.get('mode') || 'create');
+    const sessionId = String(formData.get('id') || '').trim();
     const workoutTypeId = String(formData.get('workout_type_id') || '').trim();
-    const sessionDate = String(formData.get('session_date') || '').trim();
-    const sessionTime = String(formData.get('session_time') || '').trim();
+    const startTime = String(formData.get('start_time') || '').trim();
     const trainerName = String(formData.get('trainer_name') || '').trim();
     const room = String(formData.get('room') || '').trim();
-    const startDate = new Date(`${sessionDate}T${sessionTime}`);
+    const capacity = Number(formData.get('capacity') || DEFAULT_CAPACITY);
+    const startDate = new Date(startTime);
 
-    if (!workoutTypeId || !sessionDate || !sessionTime || !trainerName || !room || Number.isNaN(startDate.getTime())) {
-      setFeedback('#admin-add-session-feedback', 'Please complete all session fields.');
+    if (!workoutTypeId || !startTime || Number.isNaN(startDate.getTime()) || !trainerName || !room || !Number.isInteger(capacity) || capacity < 1) {
+      setFeedback('#admin-session-feedback', 'Please complete all session fields correctly.');
       return;
     }
 
-    const createButton = document.querySelector('#admin-create-session-btn');
-
-    if (createButton) {
-      createButton.disabled = true;
-      createButton.textContent = 'Creating...';
+    if (mode === 'edit' && !sessionId) {
+      setFeedback('#admin-session-feedback', 'Session id is missing. Please reopen the modal.');
+      return;
     }
 
-    setFeedback('#admin-add-session-feedback', '');
+    const saveButton = document.querySelector('#admin-save-session-btn');
+
+    if (saveButton) {
+      saveButton.disabled = true;
+      saveButton.textContent = mode === 'create' ? 'Creating...' : 'Saving...';
+    }
+
+    setFeedback('#admin-session-feedback', '');
 
     try {
-      const { error } = await supabase.from('schedule').insert({
-        workout_type_id: workoutTypeId,
-        start_time: startDate.toISOString(),
-        trainer_name: trainerName,
-        room,
-        capacity: DEFAULT_CAPACITY
-      });
+      if (mode === 'create') {
+        const { error } = await supabase.from('schedule').insert({
+          workout_type_id: workoutTypeId,
+          start_time: startDate.toISOString(),
+          trainer_name: trainerName,
+          room,
+          capacity
+        });
 
-      if (error) {
-        throw error;
+        if (error) {
+          throw error;
+        }
+
+        setFeedback('#admin-sessions-feedback', 'Session added successfully.', false);
+        showToast('Session created successfully.');
+      } else {
+        const { error } = await supabase
+          .from('schedule')
+          .update({
+            workout_type_id: workoutTypeId,
+            start_time: startDate.toISOString(),
+            trainer_name: trainerName,
+            room,
+            capacity
+          })
+          .eq('id', sessionId);
+
+        if (error) {
+          throw error;
+        }
+
+        setFeedback('#admin-sessions-feedback', '');
       }
 
-      state.modals.addSession?.hide();
+      state.modals.session?.hide();
       await Promise.all([loadUpcomingSessions(), loadStats()]);
-      setFeedback('#admin-sessions-feedback', 'Session added successfully.', false);
     } catch (error) {
-      setFeedback('#admin-add-session-feedback', error?.message || 'Unable to create session right now.');
+      setFeedback('#admin-session-feedback', error?.message || 'Unable to save session right now.');
     } finally {
-      if (createButton) {
-        createButton.disabled = false;
-        createButton.textContent = 'Create Session';
+      if (saveButton) {
+        saveButton.disabled = false;
+        saveButton.textContent = mode === 'create' ? 'Create Session' : 'Save Changes';
       }
     }
   });
 };
 
-const bindCancelSession = () => {
-  const buttonElement = document.querySelector('#admin-confirm-cancel-session-btn');
+const bindDeleteSession = () => {
+  const buttonElement = document.querySelector('#admin-confirm-delete-session-btn');
 
   buttonElement?.addEventListener('click', async () => {
-    if (!state.selectedSessionToCancel) {
+    if (!state.selectedSessionToDelete) {
       return;
     }
 
     buttonElement.disabled = true;
-    buttonElement.textContent = 'Cancelling...';
+    buttonElement.textContent = 'Deleting...';
 
     try {
-      const { error } = await supabase.from('schedule').delete().eq('id', state.selectedSessionToCancel);
+      const { error } = await supabase.from('schedule').delete().eq('id', state.selectedSessionToDelete);
 
       if (error) {
         throw error;
       }
 
-      state.selectedSessionToCancel = null;
-      state.modals.cancelSession?.hide();
+      state.selectedSessionToDelete = null;
+      state.modals.deleteSession?.hide();
       await Promise.all([loadUpcomingSessions(), loadStats()]);
-      setFeedback('#admin-sessions-feedback', 'Session cancelled successfully.', false);
+      setFeedback('#admin-sessions-feedback', '');
     } catch (error) {
-      setFeedback('#admin-sessions-feedback', error?.message || 'Unable to cancel session right now.');
+      setFeedback('#admin-sessions-feedback', error?.message || 'Unable to delete session right now.');
     } finally {
       buttonElement.disabled = false;
-      buttonElement.textContent = 'Cancel Session';
+      buttonElement.textContent = 'Delete Session';
     }
   });
 };
 
-const initModals = () => {
-  state.modals.editWorkout = getBootstrapModal('admin-edit-workout-modal');
-  state.modals.deleteWorkout = getBootstrapModal('admin-delete-workout-modal');
-  state.modals.addSession = getBootstrapModal('admin-add-session-modal');
-  state.modals.cancelSession = getBootstrapModal('admin-cancel-session-modal');
+const initModalsAndToast = () => {
+  const workoutModalElement = document.querySelector('#admin-edit-workout-modal');
+  const deleteWorkoutModalElement = document.querySelector('#admin-delete-workout-modal');
+  const sessionModalElement = document.querySelector('#admin-session-modal');
+  const deleteSessionModalElement = document.querySelector('#admin-delete-session-modal');
+  const toastElement = document.querySelector('#admin-toast');
+
+  state.modals.workout = workoutModalElement ? Modal.getOrCreateInstance(workoutModalElement) : null;
+  state.modals.deleteWorkout = deleteWorkoutModalElement ? Modal.getOrCreateInstance(deleteWorkoutModalElement) : null;
+  state.modals.session = sessionModalElement ? Modal.getOrCreateInstance(sessionModalElement) : null;
+  state.modals.deleteSession = deleteSessionModalElement ? Modal.getOrCreateInstance(deleteSessionModalElement) : null;
+  state.toast = toastElement ? Toast.getOrCreateInstance(toastElement) : null;
 };
 
 export const initAdminPage = async () => {
@@ -652,13 +888,14 @@ export const initAdminPage = async () => {
     return;
   }
 
-  initModals();
+  initModalsAndToast();
   bindTabSwitching();
   bindTableActions();
-  bindEditWorkoutForm();
+  bindCreateButtons();
+  bindWorkoutForm();
   bindDeleteWorkout();
-  bindAddSession();
-  bindCancelSession();
+  bindSessionForm();
+  bindDeleteSession();
   switchTab(state.activeTab);
 
   try {
