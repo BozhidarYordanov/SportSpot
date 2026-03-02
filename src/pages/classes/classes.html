@@ -23,41 +23,83 @@
         </div>
 
         <div class="col-12 col-lg-6">
-          <p class="classes-filter-label mb-2">Difficulty</p>
-          <div class="classes-chip-group" role="group" aria-label="Filter by difficulty level">
-            <label class="classes-chip">
-              <input type="checkbox" value="1" data-difficulty-filter />
-              <span>Easy</span>
-            </label>
-            <label class="classes-chip">
-              <input type="checkbox" value="2" data-difficulty-filter />
-              <span>Intermediate</span>
-            </label>
-            <label class="classes-chip">
-              <input type="checkbox" value="3" data-difficulty-filter />
-              <span>Advanced</span>
-            </label>
+          <div class="classes-filter-trigger-row">
+            <button
+              type="button"
+              class="classes-filter-trigger"
+              data-filter-trigger="difficulty"
+              aria-expanded="false"
+              aria-controls="difficulty-filter-panel"
+            >
+              <span>Difficulty</span>
+              <span class="classes-filter-trigger-meta">
+                <span class="classes-filter-count d-none" data-filter-count="difficulty">0</span>
+                <i class="bi bi-chevron-down" aria-hidden="true"></i>
+              </span>
+            </button>
+
+            <button
+              type="button"
+              class="classes-filter-trigger"
+              data-filter-trigger="category"
+              aria-expanded="false"
+              aria-controls="category-filter-panel"
+            >
+              <span>Category</span>
+              <span class="classes-filter-trigger-meta">
+                <span class="classes-filter-count d-none" data-filter-count="category">0</span>
+                <i class="bi bi-chevron-down" aria-hidden="true"></i>
+              </span>
+            </button>
           </div>
 
-          <p class="classes-filter-label mb-2 mt-3">Category</p>
-          <div class="classes-chip-group" role="group" aria-label="Filter by class category">
-            <label class="classes-chip">
-              <input type="checkbox" value="Cardio" data-category-filter />
-              <span>Cardio</span>
-            </label>
-            <label class="classes-chip">
-              <input type="checkbox" value="Strength" data-category-filter />
-              <span>Strength</span>
-            </label>
-            <label class="classes-chip">
-              <input type="checkbox" value="Mind &amp; Body" data-category-filter />
-              <span>Mind &amp; Body</span>
-            </label>
-            <label class="classes-chip">
-              <input type="checkbox" value="Combat" data-category-filter />
-              <span>Combat</span>
-            </label>
-          </div>
+          <section class="classes-filter-accordion-item" data-filter-accordion="difficulty">
+            <div id="difficulty-filter-panel" class="classes-filter-panel" data-filter-panel="difficulty">
+              <div class="classes-filter-panel-inner">
+                <p class="classes-filter-label classes-filter-desktop-label mb-2">Difficulty</p>
+                <div class="classes-chip-group" role="group" aria-label="Filter by difficulty level">
+                  <label class="classes-chip">
+                    <input type="checkbox" value="1" data-difficulty-filter />
+                    <span>Easy</span>
+                  </label>
+                  <label class="classes-chip">
+                    <input type="checkbox" value="2" data-difficulty-filter />
+                    <span>Intermediate</span>
+                  </label>
+                  <label class="classes-chip">
+                    <input type="checkbox" value="3" data-difficulty-filter />
+                    <span>Advanced</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="classes-filter-accordion-item" data-filter-accordion="category">
+            <div id="category-filter-panel" class="classes-filter-panel" data-filter-panel="category">
+              <div class="classes-filter-panel-inner">
+                <p class="classes-filter-label classes-filter-desktop-label mb-2">Category</p>
+                <div class="classes-chip-group" role="group" aria-label="Filter by class category">
+                  <label class="classes-chip">
+                    <input type="checkbox" value="Cardio" data-category-filter />
+                    <span>Cardio</span>
+                  </label>
+                  <label class="classes-chip">
+                    <input type="checkbox" value="Strength" data-category-filter />
+                    <span>Strength</span>
+                  </label>
+                  <label class="classes-chip">
+                    <input type="checkbox" value="Mind &amp; Body" data-category-filter />
+                    <span>Mind &amp; Body</span>
+                  </label>
+                  <label class="classes-chip">
+                    <input type="checkbox" value="Combat" data-category-filter />
+                    <span>Combat</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
     </div>

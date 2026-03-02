@@ -5,6 +5,7 @@ import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
 
 const FILTER_TRANSITION_MS = 160;
 const CLASS_DETAILS_NOTICE_KEY = 'classes_notice';
+const DESKTOP_MEDIA_QUERY = '(min-width: 1024px)';
 
 const state = {
   workouts: [],
@@ -128,6 +129,70 @@ const applyFilters = () => {
   const filteredWorkouts = filterWorkouts(state.workouts);
   renderCards(filteredWorkouts);
   setResultsMeta(filteredWorkouts.length, state.workouts.length);
+  updateFilterTriggerIndicators();
+};
+
+const updateFilterTriggerIndicators = () => {
+  const difficultyCountElement = document.querySelector('[data-filter-count="difficulty"]');
+  const categoryCountElement = document.querySelector('[data-filter-count="category"]');
+  const difficultyTrigger = document.querySelector('[data-filter-trigger="difficulty"]');
+  const categoryTrigger = document.querySelector('[data-filter-trigger="category"]');
+
+  const difficultyCount = state.selectedDifficulties.size;
+  const categoryCount = state.selectedCategories.size;
+
+  if (difficultyCountElement) {
+    difficultyCountElement.textContent = String(difficultyCount);
+    difficultyCountElement.classList.toggle('d-none', difficultyCount === 0);
+  }
+
+  if (categoryCountElement) {
+    categoryCountElement.textContent = String(categoryCount);
+    categoryCountElement.classList.toggle('d-none', categoryCount === 0);
+  }
+
+  difficultyTrigger?.classList.toggle('is-active', difficultyCount > 0);
+  categoryTrigger?.classList.toggle('is-active', categoryCount > 0);
+};
+
+const updateAccordionMode = () => {
+  const isDesktop = window.matchMedia(DESKTOP_MEDIA_QUERY).matches;
+  const accordionItems = document.querySelectorAll('[data-filter-accordion]');
+  const triggers = document.querySelectorAll('[data-filter-trigger]');
+
+  accordionItems.forEach((itemElement) => {
+    itemElement.classList.toggle('is-open', isDesktop);
+  });
+
+  triggers.forEach((triggerElement) => {
+    triggerElement.setAttribute('aria-expanded', isDesktop ? 'true' : 'false');
+  });
+};
+
+const bindAccordionEvents = () => {
+  const triggers = document.querySelectorAll('[data-filter-trigger]');
+
+  triggers.forEach((triggerElement) => {
+    triggerElement.addEventListener('click', () => {
+      if (window.matchMedia(DESKTOP_MEDIA_QUERY).matches) {
+        return;
+      }
+
+      const filterName = triggerElement.getAttribute('data-filter-trigger');
+      const accordionItem = document.querySelector(`[data-filter-accordion="${filterName}"]`);
+
+      if (!accordionItem) {
+        return;
+      }
+
+      const isOpen = accordionItem.classList.toggle('is-open');
+      triggerElement.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+  });
+
+  const mediaQueryList = window.matchMedia(DESKTOP_MEDIA_QUERY);
+  mediaQueryList.addEventListener('change', updateAccordionMode);
+  updateAccordionMode();
 };
 
 const resetFilters = () => {
@@ -236,6 +301,7 @@ const loadWorkouts = async () => {
 };
 
 export const initClassesPage = async () => {
+  bindAccordionEvents();
   bindFilterEvents();
   await loadWorkouts();
   consumeClassesNotice();
