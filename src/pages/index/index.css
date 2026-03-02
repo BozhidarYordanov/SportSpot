@@ -60,12 +60,12 @@ body {
   color: var(--text-primary);
 }
 
-.featured-eyebrow {
-  color: #334155;
-}
-
 .featured-meta {
   color: #1e293b;
+}
+
+.featured-trainer {
+  color: #475569;
 }
 
 .why-us-section,
