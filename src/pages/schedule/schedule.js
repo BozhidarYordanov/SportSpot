@@ -3,6 +3,7 @@ import scheduleTemplate from './schedule.html?raw';
 import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
 import { navigateTo } from '../../router';
 import { renderDifficultyBadge } from '../../components/difficulty-badge/difficulty-badge';
+import { showToast } from '../../components/toast/toast';
 
 const DAYS_VISIBLE = 12;
 const WEEK_SHIFT_DAYS = 7;
@@ -490,7 +491,9 @@ function bindCalendarEvents() {
     try {
       await refreshSessions({ animate: true });
     } catch (error) {
-      setFeedback(error?.message || 'Unable to refresh sessions for this date.');
+      const errorMessage = error?.message || 'Unable to refresh sessions for this date.';
+      setFeedback(errorMessage);
+      showToast(errorMessage, 'error');
       setSessionsLoading(false);
     }
   });
@@ -505,7 +508,9 @@ function bindCalendarEvents() {
       try {
         await refreshSessions({ animate: true });
       } catch (error) {
-        setFeedback(error?.message || 'Unable to refresh sessions for this week.');
+        const errorMessage = error?.message || 'Unable to refresh sessions for this week.';
+        setFeedback(errorMessage);
+        showToast(errorMessage, 'error');
         setSessionsLoading(false);
       }
     }
@@ -523,7 +528,9 @@ function bindCalendarEvents() {
       try {
         await refreshSessions({ animate: true });
       } catch (error) {
-        setFeedback(error?.message || 'Unable to refresh sessions for this week.');
+        const errorMessage = error?.message || 'Unable to refresh sessions for this week.';
+        setFeedback(errorMessage);
+        showToast(errorMessage, 'error');
         setSessionsLoading(false);
       }
     }
@@ -566,14 +573,18 @@ function bindSessionActions() {
       if (isCancel) {
         await cancelSession(scheduleId);
         setFeedback('Booking cancelled.', false);
+        showToast('Booking cancelled', 'success');
       } else {
         await reserveSession(scheduleId);
-        setFeedback('Session reserved.', false);
+        setFeedback('Spot reserved! See you there.', false);
+        showToast('Spot reserved! See you there.', 'success');
       }
 
       await Promise.all([refreshSessions({ animate: false }), loadUpcomingReservations()]);
     } catch (error) {
-      setFeedback(error?.message || 'Unable to update booking right now. Please try again.');
+      const errorMessage = error?.message || 'Unable to update booking right now. Please try again.';
+      setFeedback(errorMessage);
+      showToast(errorMessage, 'error');
 
       if (/no longer available|not found|choose another time slot/i.test(error?.message || '')) {
         await Promise.all([refreshSessions({ animate: false }), loadUpcomingReservations()]);
@@ -601,7 +612,9 @@ export const initSchedulePage = async () => {
     await loadCurrentUser();
     await Promise.all([refreshSessions({ animate: false }), loadUpcomingReservations()]);
   } catch (error) {
-    setFeedback(error?.message || 'Unable to load schedule right now. Please try again.');
+    const errorMessage = error?.message || 'Unable to load schedule right now. Please try again.';
+    setFeedback(errorMessage);
+    showToast(errorMessage, 'error');
     setSessionsLoading(false);
   }
 };

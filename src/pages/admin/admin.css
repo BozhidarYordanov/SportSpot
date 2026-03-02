@@ -228,19 +228,6 @@
   box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.16);
 }
 
-.admin-toast-container {
-  z-index: 1095;
-}
-
-#admin-toast {
-  border-radius: 14px;
-  background: rgba(30, 41, 59, 0.92);
-  color: #ffffff;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
 @media (max-width: 991.98px) {
   .admin-glass-card:hover {
     transform: none;

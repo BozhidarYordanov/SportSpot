@@ -1,5 +1,6 @@
 import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
 import { navigateTo } from '../../router';
+import { showToast } from '../toast/toast';
 
 const renderGuestActions = () => `
 	<a class="btn btn-sm btn-outline-secondary px-3" href="/login" data-link>Login</a>
@@ -96,11 +97,20 @@ const setHeaderActions = (isAuthenticated, currentPath = '/', userRole = 'user')
 	}
 
 	logoutButton.addEventListener('click', async () => {
-		if (isSupabaseConfigured && supabase) {
-			await supabase.auth.signOut();
-		}
+		try {
+			if (isSupabaseConfigured && supabase) {
+				const { error } = await supabase.auth.signOut();
 
-		navigateTo('/');
+				if (error) {
+					throw error;
+				}
+			}
+
+			showToast('Logged out safely', 'success');
+			navigateTo('/');
+		} catch (error) {
+			showToast(error?.message || 'Unable to log out right now. Please try again.', 'error');
+		}
 	});
 };
 

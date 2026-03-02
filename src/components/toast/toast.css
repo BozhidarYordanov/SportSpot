@@ -1,0 +1,136 @@
+.app-toast-host {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 1080;
+  width: min(92vw, 420px);
+  pointer-events: none;
+}
+
+.app-toast {
+  display: none;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  opacity: 0;
+  transform: translateY(-14px);
+  transition: all 0.3s ease;
+  pointer-events: auto;
+}
+
+.app-toast.is-visible {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.app-toast__content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+}
+
+.app-toast__icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.app-toast__message {
+  margin: 0;
+  color: #1f2937;
+  font-weight: 600;
+  line-height: 1.35;
+  flex: 1;
+}
+
+.app-toast__close {
+  border: 0;
+  border-radius: 999px;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: #1f2937;
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.app-toast__close:hover {
+  transform: translateY(-2px);
+  background: rgba(17, 24, 39, 0.1);
+}
+
+.app-toast__progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: 100%;
+  transform-origin: left center;
+  animation: app-toast-progress 2s linear forwards;
+}
+
+.app-toast--success .app-toast__icon {
+  background: rgba(16, 185, 129, 0.16);
+  color: #047857;
+}
+
+.app-toast--success .app-toast__progress {
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.app-toast--error .app-toast__icon {
+  background: rgba(239, 68, 68, 0.16);
+  color: #b91c1c;
+}
+
+.app-toast--error .app-toast__progress {
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+.app-toast--info .app-toast__icon {
+  background: rgba(59, 130, 246, 0.16);
+  color: #1d4ed8;
+}
+
+.app-toast--info .app-toast__progress {
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+}
+
+@keyframes app-toast-progress {
+  from {
+    transform: scaleX(1);
+  }
+
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@media (max-width: 575.98px) {
+  .app-toast-host {
+    top: 0.875rem;
+    right: 0.5rem;
+    width: min(94vw, 420px);
+  }
+
+  .app-toast__content {
+    padding: 0.75rem 0.875rem;
+  }
+}

@@ -3,6 +3,7 @@ import dashboardTemplate from './dashboard.html?raw';
 import { createClassCard } from '../../components/class-card/class-card';
 import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
 import { navigateTo } from '../../router';
+import { showToast } from '../../components/toast/toast';
 
 export const renderDashboardPage = () => dashboardTemplate;
 
@@ -279,9 +280,12 @@ const bindCancelBookingAction = (userId, onRefresh) => {
 			}
 
 			setDashboardFeedback('Booking cancelled successfully.', false);
+			showToast('Booking cancelled', 'success');
 			await onRefresh();
 		} catch (error) {
-			setDashboardFeedback(error?.message || 'Unable to cancel booking right now. Please try again.');
+			const errorMessage = error?.message || 'Unable to cancel booking right now. Please try again.';
+			setDashboardFeedback(errorMessage);
+			showToast(errorMessage, 'error');
 			buttonElement.disabled = false;
 			buttonElement.textContent = 'Cancel Booking';
 		}
@@ -387,6 +391,8 @@ export const initDashboardPage = async () => {
 	try {
 		await refreshDashboard();
 	} catch (error) {
-		setDashboardFeedback(error?.message || 'Unable to load your dashboard right now.');
+		const errorMessage = error?.message || 'Unable to load your dashboard right now.';
+		setDashboardFeedback(errorMessage);
+		showToast(errorMessage, 'error');
 	}
 };

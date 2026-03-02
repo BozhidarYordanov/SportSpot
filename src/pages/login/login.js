@@ -2,6 +2,7 @@ import './login.css';
 import loginTemplate from './login.html?raw';
 import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
 import { navigateTo } from '../../router';
+import { showToast } from '../../components/toast/toast';
 
 export const renderLoginPage = () => loginTemplate;
 
@@ -154,9 +155,12 @@ export const initLoginPage = () => {
         throw error;
       }
 
+      showToast('Login successful!', 'success');
       navigateTo('/dashboard');
     } catch (error) {
-      feedbackElement.textContent = error?.message || 'Unable to sign in right now. Please try again.';
+      const errorMessage = error?.message || 'Unable to sign in right now. Please try again.';
+      feedbackElement.textContent = errorMessage;
+      showToast(errorMessage, 'error');
     } finally {
       setSubmitLoading(submitButton, false);
     }

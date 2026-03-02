@@ -1,8 +1,9 @@
 import './admin.css';
 import adminTemplate from './admin.html?raw';
-import { Modal, Toast } from 'bootstrap';
+import { Modal } from 'bootstrap';
 import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
 import { navigateTo } from '../../router';
+import { showToast } from '../../components/toast/toast';
 
 const CATEGORY_OPTIONS = ['Cardio', 'Strength', 'Mind & Body', 'Combat', 'Other'];
 const DEFAULT_CAPACITY = 20;
@@ -23,8 +24,7 @@ const state = {
     session: null,
     deleteSession: null,
     cancelBooking: null
-  },
-  toast: null
+  }
 };
 
 export const renderAdminPage = () => adminTemplate;
@@ -48,17 +48,6 @@ const setFeedback = (selector, message = '', isError = true) => {
   element.classList.toggle('d-none', !message);
   element.classList.toggle('text-danger', Boolean(message) && isError);
   element.classList.toggle('text-success', Boolean(message) && !isError);
-};
-
-const showToast = (message) => {
-  const toastBodyElement = document.querySelector('#admin-toast-body');
-
-  if (!toastBodyElement || !state.toast) {
-    return;
-  }
-
-  toastBodyElement.textContent = message;
-  state.toast.show();
 };
 
 const normalizeSlug = (value) =>
@@ -678,13 +667,17 @@ const bindTabSwitching = () => {
 
         if (tabName === 'bookings') {
           loadTodayBookings().catch((error) => {
-            setFeedback('#admin-feedback', error?.message || 'Unable to refresh today\'s bookings.');
+            const errorMessage = error?.message || 'Unable to refresh today\'s bookings.';
+            setFeedback('#admin-feedback', errorMessage);
+            showToast(errorMessage, 'error');
           });
         }
 
         if (tabName === 'registrations') {
           loadRegistrationMetrics().catch((error) => {
-            setFeedback('#admin-feedback', error?.message || 'Unable to refresh registration metrics.');
+            const errorMessage = error?.message || 'Unable to refresh registration metrics.';
+            setFeedback('#admin-feedback', errorMessage);
+            showToast(errorMessage, 'error');
           });
         }
       }
@@ -815,8 +808,8 @@ const bindWorkoutForm = () => {
           throw error;
         }
 
-        showToast('Workout created successfully.');
-        setFeedback('#admin-workouts-feedback', 'Workout created successfully.', false);
+        showToast('New workout category created', 'success');
+        setFeedback('#admin-workouts-feedback', 'New workout category created', false);
       } else {
         const { error } = await supabase
           .from('workout_types')
@@ -837,17 +830,21 @@ const bindWorkoutForm = () => {
           throw error;
         }
 
-        showToast('Workout updated successfully.');
-        setFeedback('#admin-workouts-feedback', 'Workout updated successfully.', false);
+        showToast('Workout details updated', 'success');
+        setFeedback('#admin-workouts-feedback', 'Workout details updated', false);
       }
 
       await loadWorkoutTypes();
       state.modals.workout?.hide();
     } catch (error) {
       if (/duplicate key|unique|slug/i.test(error?.message || '')) {
-        setFeedback('#admin-edit-workout-feedback', 'This slug is already in use. Please choose a different one.');
+        const errorMessage = 'This slug is already in use. Please choose a different one.';
+        setFeedback('#admin-edit-workout-feedback', errorMessage);
+        showToast(errorMessage, 'error');
       } else {
-        setFeedback('#admin-edit-workout-feedback', error?.message || 'Unable to save workout changes.');
+        const errorMessage = error?.message || 'Unable to save workout changes.';
+        setFeedback('#admin-edit-workout-feedback', errorMessage);
+        showToast(errorMessage, 'error');
       }
     } finally {
       if (saveButton) {
@@ -879,10 +876,12 @@ const bindDeleteWorkout = () => {
       state.selectedWorkoutToDelete = null;
       state.modals.deleteWorkout?.hide();
       await Promise.all([loadWorkoutTypes(), loadTodayBookings()]);
-      setFeedback('#admin-workouts-feedback', 'Workout deleted successfully.', false);
-      showToast('Workout deleted successfully.');
+      setFeedback('#admin-workouts-feedback', 'Workout type removed', false);
+      showToast('Workout type removed', 'success');
     } catch (error) {
-      setFeedback('#admin-workouts-feedback', error?.message || 'Unable to delete workout right now.');
+      const errorMessage = error?.message || 'Unable to delete workout right now.';
+      setFeedback('#admin-workouts-feedback', errorMessage);
+      showToast(errorMessage, 'error');
     } finally {
       buttonElement.disabled = false;
       buttonElement.textContent = 'Delete';
@@ -939,8 +938,8 @@ const bindSessionForm = () => {
           throw error;
         }
 
-        setFeedback('#admin-sessions-feedback', 'Session added successfully.', false);
-        showToast('Session created successfully.');
+        setFeedback('#admin-sessions-feedback', 'Session added to calendar', false);
+        showToast('Session added to calendar', 'success');
       } else {
         const { error } = await supabase
           .from('schedule')
@@ -957,13 +956,16 @@ const bindSessionForm = () => {
           throw error;
         }
 
-        setFeedback('#admin-sessions-feedback', '');
+        setFeedback('#admin-sessions-feedback', 'Schedule updated', false);
+        showToast('Schedule updated', 'success');
       }
 
       state.modals.session?.hide();
       await Promise.all([loadUpcomingSessions(), loadTodayBookings()]);
     } catch (error) {
-      setFeedback('#admin-session-feedback', error?.message || 'Unable to save session right now.');
+      const errorMessage = error?.message || 'Unable to save session right now.';
+      setFeedback('#admin-session-feedback', errorMessage);
+      showToast(errorMessage, 'error');
     } finally {
       if (saveButton) {
         saveButton.disabled = false;
@@ -994,9 +996,12 @@ const bindDeleteSession = () => {
       state.selectedSessionToDelete = null;
       state.modals.deleteSession?.hide();
       await Promise.all([loadUpcomingSessions(), loadTodayBookings()]);
-      setFeedback('#admin-sessions-feedback', '');
+      setFeedback('#admin-sessions-feedback', 'Session cancelled', false);
+      showToast('Session cancelled', 'success');
     } catch (error) {
-      setFeedback('#admin-sessions-feedback', error?.message || 'Unable to delete session right now.');
+      const errorMessage = error?.message || 'Unable to delete session right now.';
+      setFeedback('#admin-sessions-feedback', errorMessage);
+      showToast(errorMessage, 'error');
     } finally {
       buttonElement.disabled = false;
       buttonElement.textContent = 'Delete Session';
@@ -1025,10 +1030,12 @@ const bindCancelBooking = () => {
       state.selectedBookingToCancel = null;
       state.modals.cancelBooking?.hide();
       await Promise.all([loadTodayBookings(), loadUpcomingSessions()]);
-      showToast('Booking canceled successfully. Spot is available again.');
+      showToast('User reservation removed and spot freed', 'success');
       setFeedback('#admin-feedback', '', false);
     } catch (error) {
-      setFeedback('#admin-feedback', error?.message || 'Unable to cancel booking right now.');
+      const errorMessage = error?.message || 'Unable to cancel booking right now.';
+      setFeedback('#admin-feedback', errorMessage);
+      showToast(errorMessage, 'error');
     } finally {
       buttonElement.disabled = false;
       buttonElement.textContent = 'Cancel Booking';
@@ -1042,14 +1049,12 @@ const initModalsAndToast = () => {
   const sessionModalElement = document.querySelector('#admin-session-modal');
   const deleteSessionModalElement = document.querySelector('#admin-delete-session-modal');
   const cancelBookingModalElement = document.querySelector('#admin-cancel-booking-modal');
-  const toastElement = document.querySelector('#admin-toast');
 
   state.modals.workout = workoutModalElement ? Modal.getOrCreateInstance(workoutModalElement) : null;
   state.modals.deleteWorkout = deleteWorkoutModalElement ? Modal.getOrCreateInstance(deleteWorkoutModalElement) : null;
   state.modals.session = sessionModalElement ? Modal.getOrCreateInstance(sessionModalElement) : null;
   state.modals.deleteSession = deleteSessionModalElement ? Modal.getOrCreateInstance(deleteSessionModalElement) : null;
   state.modals.cancelBooking = cancelBookingModalElement ? Modal.getOrCreateInstance(cancelBookingModalElement) : null;
-  state.toast = toastElement ? Toast.getOrCreateInstance(toastElement) : null;
 };
 
 export const initAdminPage = async () => {
@@ -1094,6 +1099,8 @@ export const initAdminPage = async () => {
     setFeedback('#admin-feedback', '');
     await Promise.all([loadTodayBookings(), loadRegistrationMetrics(), loadWorkoutTypes(), loadUpcomingSessions()]);
   } catch (error) {
-    setFeedback('#admin-feedback', error?.message || 'Unable to load admin data right now.');
+    const errorMessage = error?.message || 'Unable to load admin data right now.';
+    setFeedback('#admin-feedback', errorMessage);
+    showToast(errorMessage, 'error');
   }
 };

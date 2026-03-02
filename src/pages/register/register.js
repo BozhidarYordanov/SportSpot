@@ -2,6 +2,7 @@ import './register.css';
 import registerTemplate from './register.html?raw';
 import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
 import { navigateTo } from '../../router';
+import { showToast } from '../../components/toast/toast';
 
 export const renderRegisterPage = () => registerTemplate;
 
@@ -271,15 +272,19 @@ export const initRegisterPage = () => {
       }
 
       if (data?.session) {
+        showToast('Welcome to the club!', 'success');
         navigateTo('/dashboard');
         return;
       }
 
       setFeedback('Registration successful! Please check your email for confirmation.', false);
+      showToast('Welcome to the club!', 'success');
       formElement.reset();
       setPasswordStrengthMeter(passwordStrengthFill, '');
     } catch (error) {
-      setFeedback(error?.message || 'Unable to register right now. Please try again.');
+      const errorMessage = error?.message || 'Unable to register right now. Please try again.';
+      setFeedback(errorMessage);
+      showToast(errorMessage, 'error');
     } finally {
       setSubmitLoading(submitButton, false);
     }
