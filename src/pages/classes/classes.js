@@ -1,17 +1,14 @@
 import './classes.css';
 import classesTemplate from './classes.html?raw';
 import { createClassCard } from '../../components/class-card/class-card';
+import { destroyFilters, getFiltersState, initFilters, renderFilters, resetFilters } from '../../components/filters/filters';
 import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
 
 const FILTER_TRANSITION_MS = 160;
 const CLASS_DETAILS_NOTICE_KEY = 'classes_notice';
-const DESKTOP_MEDIA_QUERY = '(min-width: 1024px)';
 
 const state = {
-  workouts: [],
-  searchTerm: '',
-  selectedDifficulties: new Set(),
-  selectedCategories: new Set()
+  workouts: []
 };
 
 let filterRenderTimeoutId = null;
@@ -53,22 +50,24 @@ const normalizeDifficulty = (value) => {
 };
 
 const filterWorkouts = (workouts) => {
+  const filtersState = getFiltersState();
+
   return workouts.filter((workout) => {
     const title = String(workout?.title || '').toLowerCase();
-    const matchesSearch = title.includes(state.searchTerm);
+    const matchesSearch = title.includes(filtersState.searchTerm);
     const category = String(workout?.category || '').trim().toLowerCase();
-    const matchesCategory = state.selectedCategories.size === 0 || state.selectedCategories.has(category);
+    const matchesCategory = filtersState.selectedCategories.size === 0 || filtersState.selectedCategories.has(category);
 
     if (!matchesSearch || !matchesCategory) {
       return false;
     }
 
-    if (state.selectedDifficulties.size === 0) {
+    if (filtersState.selectedDifficulties.size === 0) {
       return true;
     }
 
     const difficultyLevel = normalizeDifficulty(workout?.difficulty_level);
-    return state.selectedDifficulties.has(difficultyLevel);
+    return filtersState.selectedDifficulties.has(difficultyLevel);
   });
 };
 
@@ -125,139 +124,24 @@ const renderCards = (workouts) => {
   }, FILTER_TRANSITION_MS);
 };
 
-const applyFilters = () => {
+const renderWorkouts = () => {
   const filteredWorkouts = filterWorkouts(state.workouts);
   renderCards(filteredWorkouts);
   setResultsMeta(filteredWorkouts.length, state.workouts.length);
-  updateFilterTriggerIndicators();
 };
 
-const updateFilterTriggerIndicators = () => {
-  const difficultyCountElement = document.querySelector('[data-filter-count="difficulty"]');
-  const categoryCountElement = document.querySelector('[data-filter-count="category"]');
-  const difficultyTrigger = document.querySelector('[data-filter-trigger="difficulty"]');
-  const categoryTrigger = document.querySelector('[data-filter-trigger="category"]');
+const mountFilters = () => {
+  const filtersMountElement = document.querySelector('#classes-filters-mount');
 
-  const difficultyCount = state.selectedDifficulties.size;
-  const categoryCount = state.selectedCategories.size;
-
-  if (difficultyCountElement) {
-    difficultyCountElement.textContent = String(difficultyCount);
-    difficultyCountElement.classList.toggle('d-none', difficultyCount === 0);
+  if (!filtersMountElement) {
+    return;
   }
 
-  if (categoryCountElement) {
-    categoryCountElement.textContent = String(categoryCount);
-    categoryCountElement.classList.toggle('d-none', categoryCount === 0);
-  }
-
-  difficultyTrigger?.classList.toggle('is-active', difficultyCount > 0);
-  categoryTrigger?.classList.toggle('is-active', categoryCount > 0);
+  filtersMountElement.innerHTML = renderFilters();
 };
 
-const updateAccordionMode = () => {
-  const isDesktop = window.matchMedia(DESKTOP_MEDIA_QUERY).matches;
-  const accordionItems = document.querySelectorAll('[data-filter-accordion]');
-  const triggers = document.querySelectorAll('[data-filter-trigger]');
-
-  accordionItems.forEach((itemElement) => {
-    itemElement.classList.toggle('is-open', isDesktop);
-  });
-
-  triggers.forEach((triggerElement) => {
-    triggerElement.setAttribute('aria-expanded', isDesktop ? 'true' : 'false');
-  });
-};
-
-const bindAccordionEvents = () => {
-  const triggers = document.querySelectorAll('[data-filter-trigger]');
-
-  triggers.forEach((triggerElement) => {
-    triggerElement.addEventListener('click', () => {
-      if (window.matchMedia(DESKTOP_MEDIA_QUERY).matches) {
-        return;
-      }
-
-      const filterName = triggerElement.getAttribute('data-filter-trigger');
-      const accordionItem = document.querySelector(`[data-filter-accordion="${filterName}"]`);
-
-      if (!accordionItem) {
-        return;
-      }
-
-      const isOpen = accordionItem.classList.toggle('is-open');
-      triggerElement.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-    });
-  });
-
-  const mediaQueryList = window.matchMedia(DESKTOP_MEDIA_QUERY);
-  mediaQueryList.addEventListener('change', updateAccordionMode);
-  updateAccordionMode();
-};
-
-const resetFilters = () => {
-  const searchInput = document.querySelector('#classes-search');
-  const difficultyInputs = document.querySelectorAll('[data-difficulty-filter]');
-  const categoryInputs = document.querySelectorAll('[data-category-filter]');
-
-  state.searchTerm = '';
-  state.selectedDifficulties.clear();
-  state.selectedCategories.clear();
-
-  if (searchInput) {
-    searchInput.value = '';
-  }
-
-  difficultyInputs.forEach((inputElement) => {
-    inputElement.checked = false;
-  });
-
-  categoryInputs.forEach((inputElement) => {
-    inputElement.checked = false;
-  });
-
-  applyFilters();
-};
-
-const bindFilterEvents = () => {
-  const searchInput = document.querySelector('#classes-search');
-  const difficultyInputs = document.querySelectorAll('[data-difficulty-filter]');
-  const categoryInputs = document.querySelectorAll('[data-category-filter]');
+const bindResetButton = () => {
   const resetButton = document.querySelector('#classes-reset-btn');
-
-  searchInput?.addEventListener('input', (event) => {
-    const value = String(event.target.value || '').trim().toLowerCase();
-    state.searchTerm = value;
-    applyFilters();
-  });
-
-  difficultyInputs.forEach((inputElement) => {
-    inputElement.addEventListener('change', () => {
-      const difficulty = normalizeDifficulty(inputElement.value);
-
-      if (inputElement.checked) {
-        state.selectedDifficulties.add(difficulty);
-      } else {
-        state.selectedDifficulties.delete(difficulty);
-      }
-
-      applyFilters();
-    });
-  });
-
-  categoryInputs.forEach((inputElement) => {
-    inputElement.addEventListener('change', () => {
-      const normalizedCategory = String(inputElement.value || '').trim().toLowerCase();
-
-      if (inputElement.checked) {
-        state.selectedCategories.add(normalizedCategory);
-      } else {
-        state.selectedCategories.delete(normalizedCategory);
-      }
-
-      applyFilters();
-    });
-  });
 
   resetButton?.addEventListener('click', resetFilters);
 };
@@ -292,17 +176,19 @@ const loadWorkouts = async () => {
   if (error) {
     setFeedback(error.message || 'Unable to load classes right now. Please try again.');
     state.workouts = [];
-    applyFilters();
+    renderWorkouts();
     return;
   }
 
   state.workouts = Array.isArray(data) ? data : [];
-  applyFilters();
+  renderWorkouts();
 };
 
 export const initClassesPage = async () => {
-  bindAccordionEvents();
-  bindFilterEvents();
+  destroyFilters();
+  mountFilters();
+  initFilters({ onChange: renderWorkouts });
+  bindResetButton();
   await loadWorkouts();
   consumeClassesNotice();
 };
