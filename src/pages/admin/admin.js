@@ -7,6 +7,7 @@ import { showToast } from '../../components/toast/toast';
 
 const CATEGORY_OPTIONS = ['Cardio', 'Strength', 'Mind & Body', 'Combat', 'Other'];
 const DEFAULT_CAPACITY = 20;
+const WORKOUT_IMAGES_BUCKET = 'workout-images';
 
 const state = {
   userId: null,
@@ -18,6 +19,7 @@ const state = {
   selectedWorkoutToDelete: null,
   selectedSessionToDelete: null,
   selectedBookingToCancel: null,
+  workoutImagePreviewObjectUrl: null,
   modals: {
     workout: null,
     deleteWorkout: null,
@@ -56,6 +58,133 @@ const normalizeSlug = (value) =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
+
+const normalizeFileSegment = (value) =>
+  String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80);
+
+const getFileExtension = (file) => {
+  const fromName = String(file?.name || '').split('.').pop()?.toLowerCase();
+
+  if (fromName && /^[a-z0-9]{2,5}$/.test(fromName)) {
+    return fromName;
+  }
+
+  const mime = String(file?.type || '').toLowerCase();
+
+  if (mime === 'image/png') {
+    return 'png';
+  }
+
+  if (mime === 'image/webp') {
+    return 'webp';
+  }
+
+  if (mime === 'image/gif') {
+    return 'gif';
+  }
+
+  return 'jpg';
+};
+
+const getWorkoutImagePathFromPublicUrl = (publicUrl) => {
+  const rawUrl = String(publicUrl || '').trim();
+
+  if (!rawUrl) {
+    return null;
+  }
+
+  try {
+    const parsedUrl = new URL(rawUrl);
+    const marker = `/object/public/${WORKOUT_IMAGES_BUCKET}/`;
+    const markerIndex = parsedUrl.pathname.indexOf(marker);
+
+    if (markerIndex === -1) {
+      return null;
+    }
+
+    const path = parsedUrl.pathname.slice(markerIndex + marker.length);
+    return decodeURIComponent(path);
+  } catch {
+    return null;
+  }
+};
+
+const setWorkoutImagePreview = ({ file = null, imageUrl = '' } = {}) => {
+  const imageElement = document.querySelector('#admin-edit-image-preview');
+  const placeholderElement = document.querySelector('#admin-edit-image-placeholder');
+
+  if (!imageElement || !placeholderElement) {
+    return;
+  }
+
+  if (state.workoutImagePreviewObjectUrl) {
+    URL.revokeObjectURL(state.workoutImagePreviewObjectUrl);
+    state.workoutImagePreviewObjectUrl = null;
+  }
+
+  const normalizedUrl = String(imageUrl || '').trim();
+
+  if (file instanceof File && file.size > 0) {
+    state.workoutImagePreviewObjectUrl = URL.createObjectURL(file);
+    imageElement.src = state.workoutImagePreviewObjectUrl;
+    imageElement.classList.remove('d-none');
+    placeholderElement.classList.add('d-none');
+    return;
+  }
+
+  if (normalizedUrl) {
+    imageElement.src = normalizedUrl;
+    imageElement.classList.remove('d-none');
+    placeholderElement.classList.add('d-none');
+    return;
+  }
+
+  imageElement.removeAttribute('src');
+  imageElement.classList.add('d-none');
+  placeholderElement.classList.remove('d-none');
+};
+
+const uploadWorkoutImage = async ({ file, workoutTitle }) => {
+  const extension = getFileExtension(file);
+  const titleSegment = normalizeFileSegment(workoutTitle) || 'workout';
+  const uniqueName = `${Date.now()}-${crypto.randomUUID()}-${titleSegment}.${extension}`;
+  const filePath = `workout-types/${uniqueName}`;
+
+  const { error: uploadError } = await supabase.storage.from(WORKOUT_IMAGES_BUCKET).upload(filePath, file, {
+    cacheControl: '3600',
+    upsert: false,
+    contentType: file.type || undefined
+  });
+
+  if (uploadError) {
+    throw uploadError;
+  }
+
+  const { data } = supabase.storage.from(WORKOUT_IMAGES_BUCKET).getPublicUrl(filePath);
+  return {
+    filePath,
+    publicUrl: String(data?.publicUrl || '').trim()
+  };
+};
+
+const removeWorkoutImageByPublicUrl = async (publicUrl) => {
+  const filePath = getWorkoutImagePathFromPublicUrl(publicUrl);
+
+  if (!filePath) {
+    return;
+  }
+
+  const { error } = await supabase.storage.from(WORKOUT_IMAGES_BUCKET).remove([filePath]);
+
+  if (error) {
+    throw error;
+  }
+};
 
 const toLocalDateTimeValue = (isoDateTime) => {
   const date = new Date(isoDateTime);
@@ -260,7 +389,7 @@ const renderWorkoutTypeOptions = () => {
 const loadWorkoutTypes = async () => {
   const { data, error } = await supabase
     .from('workout_types')
-    .select('id, title, slug, duration_minutes, description, description_long, suitable_for, what_to_bring, category, difficulty_level')
+    .select('id, title, slug, duration_minutes, description, description_long, suitable_for, what_to_bring, category, difficulty_level, image_url')
     .order('title', { ascending: true });
 
   if (error) {
@@ -493,6 +622,7 @@ const openWorkoutModal = (mode, workoutId = null) => {
   const whatToBringInput = document.querySelector('#admin-edit-what-to-bring');
   const categoryInput = document.querySelector('#admin-edit-category');
   const difficultyInput = document.querySelector('#admin-edit-difficulty');
+  const imageInput = document.querySelector('#admin-edit-image-url');
   const modalTitleElement = document.querySelector('#admin-edit-workout-label');
   const submitButtonElement = document.querySelector('#admin-save-workout-btn');
 
@@ -508,7 +638,8 @@ const openWorkoutModal = (mode, workoutId = null) => {
     !suitableForInput ||
     !whatToBringInput ||
     !categoryInput ||
-    !difficultyInput
+    !difficultyInput ||
+    !imageInput
   ) {
     return;
   }
@@ -534,6 +665,7 @@ const openWorkoutModal = (mode, workoutId = null) => {
     whatToBringInput.value = workout.what_to_bring || '';
     categoryInput.value = CATEGORY_OPTIONS.includes(workout.category) ? workout.category : 'Other';
     difficultyInput.value = String(workout.difficulty_level || 2);
+    setWorkoutImagePreview({ imageUrl: workout.image_url || '' });
 
     if (modalTitleElement) {
       modalTitleElement.textContent = 'Edit Workout';
@@ -551,6 +683,7 @@ const openWorkoutModal = (mode, workoutId = null) => {
     whatToBringInput.value = '';
     categoryInput.value = 'Other';
     difficultyInput.value = '2';
+    setWorkoutImagePreview();
 
     if (modalTitleElement) {
       modalTitleElement.textContent = 'Add New Workout';
@@ -747,6 +880,12 @@ const bindCreateButtons = () => {
 
 const bindWorkoutForm = () => {
   const formElement = document.querySelector('#admin-edit-workout-form');
+  const imageInput = document.querySelector('#admin-edit-image-url');
+
+  imageInput?.addEventListener('change', () => {
+    const selectedFile = imageInput.files?.[0] || null;
+    setWorkoutImagePreview({ file: selectedFile });
+  });
 
   formElement?.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -763,6 +902,9 @@ const bindWorkoutForm = () => {
     const whatToBring = String(formData.get('what_to_bring') || '').trim();
     const category = String(formData.get('category') || 'Other').trim();
     const difficultyLevel = Number(formData.get('difficulty_level') || 2);
+    const uploadedFile = formData.get('image_url');
+    const selectedImageFile = uploadedFile instanceof File && uploadedFile.size > 0 ? uploadedFile : null;
+    const existingWorkout = mode === 'edit' ? state.workouts.find((item) => item.id === workoutId) : null;
 
     if (
       !title ||
@@ -790,7 +932,21 @@ const bindWorkoutForm = () => {
 
     setFeedback('#admin-edit-workout-feedback', '');
 
+    let uploadedImagePath = null;
+    let imageUrlToSave = String(existingWorkout?.image_url || '').trim() || null;
+
     try {
+      if (selectedImageFile) {
+        showToast('Uploading image...', 'info');
+        const uploadResult = await uploadWorkoutImage({
+          file: selectedImageFile,
+          workoutTitle: title
+        });
+
+        uploadedImagePath = uploadResult.filePath;
+        imageUrlToSave = uploadResult.publicUrl || null;
+      }
+
       if (mode === 'create') {
         const { error } = await supabase.from('workout_types').insert({
           title,
@@ -801,7 +957,8 @@ const bindWorkoutForm = () => {
           suitable_for: suitableFor || null,
           what_to_bring: whatToBring || null,
           category,
-          difficulty_level: difficultyLevel
+          difficulty_level: difficultyLevel,
+          image_url: imageUrlToSave
         });
 
         if (error) {
@@ -822,7 +979,8 @@ const bindWorkoutForm = () => {
             suitable_for: suitableFor || null,
             what_to_bring: whatToBring || null,
             category,
-            difficulty_level: difficultyLevel
+            difficulty_level: difficultyLevel,
+            image_url: imageUrlToSave
           })
           .eq('id', workoutId);
 
@@ -834,9 +992,24 @@ const bindWorkoutForm = () => {
         setFeedback('#admin-workouts-feedback', 'Workout details updated', false);
       }
 
+      const oldImageUrl = String(existingWorkout?.image_url || '').trim();
+
+      if (mode === 'edit' && selectedImageFile && oldImageUrl && oldImageUrl !== imageUrlToSave) {
+        try {
+          await removeWorkoutImageByPublicUrl(oldImageUrl);
+        } catch (deleteError) {
+          console.warn('Unable to remove previous workout image:', deleteError);
+        }
+      }
+
       await loadWorkoutTypes();
       state.modals.workout?.hide();
+      setWorkoutImagePreview();
     } catch (error) {
+      if (uploadedImagePath) {
+        await supabase.storage.from(WORKOUT_IMAGES_BUCKET).remove([uploadedImagePath]);
+      }
+
       if (/duplicate key|unique|slug/i.test(error?.message || '')) {
         const errorMessage = 'This slug is already in use. Please choose a different one.';
         setFeedback('#admin-edit-workout-feedback', errorMessage);
@@ -1055,6 +1228,10 @@ const initModalsAndToast = () => {
   state.modals.session = sessionModalElement ? Modal.getOrCreateInstance(sessionModalElement) : null;
   state.modals.deleteSession = deleteSessionModalElement ? Modal.getOrCreateInstance(deleteSessionModalElement) : null;
   state.modals.cancelBooking = cancelBookingModalElement ? Modal.getOrCreateInstance(cancelBookingModalElement) : null;
+
+  workoutModalElement?.addEventListener('hidden.bs.modal', () => {
+    setWorkoutImagePreview();
+  });
 };
 
 export const initAdminPage = async () => {

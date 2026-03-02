@@ -228,6 +228,28 @@
   box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.16);
 }
 
+.admin-image-preview {
+  min-height: 6rem;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.82);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+}
+
+.admin-image-preview-img {
+  max-width: 100%;
+  max-height: 7.5rem;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.admin-image-preview-placeholder {
+  color: #475569;
+  font-size: 0.9rem;
+}
+
 @media (max-width: 991.98px) {
   .admin-glass-card:hover {
     transform: none;

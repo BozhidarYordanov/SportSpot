@@ -180,6 +180,15 @@
             <label class="form-label" for="admin-edit-what-to-bring">What to Bring</label>
             <textarea class="form-control" id="admin-edit-what-to-bring" name="what_to_bring" rows="2" maxlength="600"></textarea>
           </div>
+          <div class="mb-3">
+            <label class="form-label" for="admin-edit-image-url">Workout Image</label>
+            <input class="form-control" id="admin-edit-image-url" name="image_url" type="file" accept="image/*" />
+            <small class="text-secondary">Upload JPG, PNG, WEBP, or GIF image.</small>
+            <div class="admin-image-preview mt-2 rounded-4">
+              <img id="admin-edit-image-preview" class="admin-image-preview-img d-none" alt="Workout preview" />
+              <p id="admin-edit-image-placeholder" class="admin-image-preview-placeholder mb-0">No image selected</p>
+            </div>
+          </div>
           <div class="row g-3">
             <div class="col-12 col-md-7">
               <label class="form-label" for="admin-edit-category">Category</label>
