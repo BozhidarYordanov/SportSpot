@@ -1,12 +1,12 @@
 import './class-details.css';
 import classDetailsTemplate from './class-details.html?raw';
 import { renderDifficultyBadge } from '../../components/difficulty-badge/difficulty-badge';
+import { showToast } from '../../components/toast/toast';
 import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
 import { navigateTo } from '../../router';
 
 const CLASS_DETAILS_NOTICE_KEY = 'classes_notice';
 const SUCCESS_REDIRECT_DELAY_MS = 1200;
-const CONFETTI_DURATION_MS = 900;
 
 const bulletIconSvg = `
   <svg class="class-details-feature-icon" viewBox="0 0 20 20" focusable="false" aria-hidden="true">
@@ -198,35 +198,6 @@ const setSessionBookedState = (buttonElement, isBooked) => {
   buttonElement.textContent = 'Reserve';
 };
 
-const runConfetti = () => {
-  const confettiElement = document.querySelector('#class-details-confetti');
-
-  if (!confettiElement) {
-    return;
-  }
-
-  const palette = ['#0d6efd', '#20c997', '#ffc107', '#6610f2'];
-  const piecesMarkup = Array.from({ length: 26 }, (_, index) => {
-    const left = Math.round((index / 25) * 100);
-    const drift = `${Math.round((Math.random() - 0.5) * 220)}px`;
-    const rotate = `${Math.round(180 + Math.random() * 360)}deg`;
-    const delay = `${Math.round(Math.random() * 140)}ms`;
-    const color = palette[index % palette.length];
-
-    return `<span class="class-details-confetti-piece" style="left:${left}%;background:${color};--confetti-drift:${drift};--confetti-rotate:${rotate};animation-delay:${delay};"></span>`;
-  }).join('');
-
-  confettiElement.innerHTML = piecesMarkup;
-  confettiElement.classList.remove('d-none');
-  confettiElement.classList.add('is-active');
-
-  window.setTimeout(() => {
-    confettiElement.classList.remove('is-active');
-    confettiElement.classList.add('d-none');
-    confettiElement.innerHTML = '';
-  }, CONFETTI_DURATION_MS);
-};
-
 const renderFeatureList = (elementId, textValue, fallbackText) => {
   const listElement = document.querySelector(elementId);
 
@@ -276,23 +247,6 @@ const setReserveLoading = (isLoading) => {
   }
 
   labelElement.textContent = 'Reserve This Class';
-};
-
-const showSuccessAndRedirect = () => {
-  runConfetti();
-
-  const overlayElement = document.querySelector('#class-details-success-overlay');
-
-  if (!overlayElement) {
-    navigateTo('/dashboard');
-    return;
-  }
-
-  overlayElement.classList.remove('d-none');
-
-  window.setTimeout(() => {
-    navigateTo('/dashboard');
-  }, SUCCESS_REDIRECT_DELAY_MS);
 };
 
 const reserveSchedule = async (scheduleId) => {
@@ -423,16 +377,19 @@ const bindSessionBookingActions = () => {
         await cancelSchedule(scheduleId);
         bookedScheduleIds.delete(scheduleId);
         setSessionBookedState(reserveButton, false);
-        setFeedback('Booking cancelled.', false);
+        showToast('Booking cancelled', 'success');
       } else {
         await reserveSchedule(scheduleId);
         bookedScheduleIds.add(scheduleId);
         setSessionBookedState(reserveButton, true);
-        showSuccessAndRedirect();
+        showToast('Spot reserved! See you there.', 'success');
+        window.setTimeout(() => {
+          navigateTo('/dashboard');
+        }, SUCCESS_REDIRECT_DELAY_MS);
       }
     } catch (error) {
       setSessionButtonLoading(reserveButton, false);
-      setFeedback(error?.message || 'Unable to update booking right now. Please try again.');
+      showToast(error?.message || 'Unable to update booking right now. Please try again.', 'error');
     }
   });
 };
