@@ -7,6 +7,7 @@ import { renderDashboardPage, initDashboardPage } from './pages/dashboard/dashbo
 import { renderClassesPage, initClassesPage } from './pages/classes/classes';
 import { renderClassDetailsPage, initClassDetailsPage } from './pages/class-details/class-details';
 import { renderSchedulePage, initSchedulePage } from './pages/schedule/schedule';
+import { renderAdminPage, initAdminPage } from './pages/admin/admin';
 
 let currentAppElement = null;
 
@@ -34,6 +35,10 @@ const routes = {
   '/schedule': {
     render: renderSchedulePage,
     init: initSchedulePage
+  },
+  '/admin': {
+    render: renderAdminPage,
+    init: initAdminPage
   },
   '/class-details/:slug': {
     render: renderClassDetailsPage,

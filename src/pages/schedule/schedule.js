@@ -417,6 +417,26 @@ async function loadUpcomingReservations() {
 }
 
 async function reserveSession(scheduleId) {
+  const { data: scheduleRow, error: scheduleLookupError } = await supabase
+    .from('schedule')
+    .select('id, capacity, enrolled_count')
+    .eq('id', scheduleId)
+    .maybeSingle();
+
+  if (scheduleLookupError) {
+    throw scheduleLookupError;
+  }
+
+  if (!scheduleRow?.id) {
+    throw new Error('This session is no longer available. Please choose another time slot.');
+  }
+
+  const availableSpots = Math.max(Number(scheduleRow.capacity || 0) - Number(scheduleRow.enrolled_count || 0), 0);
+
+  if (availableSpots <= 0) {
+    throw new Error('This session just became full. Please choose another one.');
+  }
+
   const { error } = await supabase.from('bookings').insert({ schedule_id: scheduleId, user_id: state.userId });
 
   if (error) {
@@ -426,6 +446,10 @@ async function reserveSession(scheduleId) {
 
     if (/fully booked|full/i.test(error.message || '')) {
       throw new Error('This session just became full.');
+    }
+
+    if (/schedule\s+.+\s+not found|not found/i.test(error.message || '')) {
+      throw new Error('This session is no longer available. Please choose another time slot.');
     }
 
     throw error;
@@ -550,6 +574,10 @@ function bindSessionActions() {
       await Promise.all([refreshSessions({ animate: false }), loadUpcomingReservations()]);
     } catch (error) {
       setFeedback(error?.message || 'Unable to update booking right now. Please try again.');
+
+      if (/no longer available|not found|choose another time slot/i.test(error?.message || '')) {
+        await Promise.all([refreshSessions({ animate: false }), loadUpcomingReservations()]);
+      }
     } finally {
       actionButton.disabled = false;
     }

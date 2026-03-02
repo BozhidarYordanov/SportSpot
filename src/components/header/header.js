@@ -6,17 +6,56 @@ const renderGuestActions = () => `
 	<a class="btn btn-sm btn-primary px-3" href="/register" data-link>Register</a>
 `;
 
-const renderAuthenticatedActions = (isDashboardActive) => `
-	<li class="nav-item">
-		<a class="${getNavLinkClass(isDashboardActive)}" href="/dashboard" data-link>Dashboard</a>
-	</li>
-`;
+const renderAuthenticatedActions = (options = {}) => {
+	const { isDashboardActive = false, isAdminActive = false, showAdminLink = false } = options;
+
+	return `
+		<li class="nav-item">
+			<a class="${getNavLinkClass(isDashboardActive)}" href="/dashboard" data-link>Dashboard</a>
+		</li>
+		${
+			showAdminLink
+				? `<li class="nav-item">
+					<a class="${getNavLinkClass(isAdminActive)}" href="/admin" data-link>[Admin]</a>
+				</li>`
+				: ''
+		}
+	`;
+};
 
 const renderLogoutButton = () => `
 	<button type="button" class="btn btn-sm btn-primary px-3" id="header-logout-btn">Logout</button>
 `;
 
-const setHeaderActions = (isAuthenticated, currentPath = '/') => {
+const getUserRole = async (userId) => {
+	if (!userId) {
+		return 'user';
+	}
+
+	try {
+		const { data: roleRow, error: roleError } = await supabase
+			.from('user_roles')
+			.select('role')
+			.eq('user_id', userId)
+			.order('role', { ascending: true })
+			.limit(1)
+			.single();
+
+		if (roleError) {
+			throw roleError;
+		}
+
+		return String(roleRow?.role || 'user').toLowerCase();
+	} catch (error) {
+		if (error?.code === 'PGRST116') {
+			return 'user';
+		}
+
+		return 'user';
+	}
+};
+
+const setHeaderActions = (isAuthenticated, currentPath = '/', userRole = 'user') => {
 	const navList = document.querySelector('.navbar-nav');
 	const logoutContainer = document.querySelector('#header-auth-actions');
 
@@ -30,9 +69,21 @@ const setHeaderActions = (isAuthenticated, currentPath = '/') => {
 		existingDashboard.closest('.nav-item')?.remove();
 	}
 
+	const existingAdmin = navList.querySelector('[href="/admin"]');
+	if (existingAdmin) {
+		existingAdmin.closest('.nav-item')?.remove();
+	}
+
 	// Add Dashboard to nav list if authenticated
 	if (isAuthenticated) {
-		navList.insertAdjacentHTML('beforeend', renderAuthenticatedActions(currentPath === '/dashboard'));
+		navList.insertAdjacentHTML(
+			'beforeend',
+			renderAuthenticatedActions({
+				isDashboardActive: currentPath === '/dashboard',
+				isAdminActive: currentPath === '/admin',
+				showAdminLink: userRole === 'admin'
+			})
+		);
 	}
 
 	// Set logout button
@@ -102,5 +153,11 @@ export const initHeader = async () => {
 		data: { session }
 	} = await supabase.auth.getSession();
 
-	setHeaderActions(Boolean(session?.user), currentPath);
+	if (!session?.user?.id) {
+		setHeaderActions(false, currentPath);
+		return;
+	}
+
+	const userRole = await getUserRole(session.user.id);
+	setHeaderActions(true, currentPath, userRole);
 };
