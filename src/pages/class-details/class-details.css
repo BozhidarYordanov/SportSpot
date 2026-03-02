@@ -5,6 +5,10 @@
 }
 
 .class-details-hero {
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   border: 1px solid #f0f0f0;
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(10px);
@@ -21,13 +25,14 @@
   background-color: transparent;
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
 }
 
 .class-details-hero.has-image::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(115deg, rgba(9, 21, 40, 0.62), rgba(9, 21, 40, 0.28));
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5));
   z-index: 0;
 }
 
@@ -196,4 +201,10 @@
 
 .class-details-feature-icon path {
   fill: rgba(13, 110, 253, 0.85);
+}
+
+@media (max-width: 767.98px) {
+  .class-details-hero {
+    min-height: 300px;
+  }
 }
