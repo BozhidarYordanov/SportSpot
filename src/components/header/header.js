@@ -28,6 +28,8 @@ const renderLogoutButton = () => `
 	<button type="button" class="btn btn-sm btn-primary px-3" id="header-logout-btn">Logout</button>
 `;
 
+const ROLE_CACHE_KEY = 'user_role';
+
 const getUserRole = async (userId) => {
 	if (!userId) {
 		return 'user';
@@ -46,9 +48,12 @@ const getUserRole = async (userId) => {
 			throw roleError;
 		}
 
-		return String(roleRow?.role || 'user').toLowerCase();
+		const role = String(roleRow?.role || 'user').toLowerCase();
+		sessionStorage.setItem(ROLE_CACHE_KEY, role);
+		return role;
 	} catch (error) {
 		if (error?.code === 'PGRST116') {
+			sessionStorage.setItem(ROLE_CACHE_KEY, 'user');
 			return 'user';
 		}
 
@@ -106,6 +111,8 @@ const setHeaderActions = (isAuthenticated, currentPath = '/', userRole = 'user')
 				}
 			}
 
+			sessionStorage.removeItem(ROLE_CACHE_KEY);
+			setHeaderActions(false, '/');
 			showToast('Logged out safely', 'success');
 			navigateTo('/');
 		} catch (error) {
@@ -151,6 +158,25 @@ export const renderHeader = (currentPath = '/') => `
 	</header>
 `;
 
+export const updateHeaderActiveState = (currentPath = '/') => {
+	const allLinks = document.querySelectorAll('.navbar-nav .nav-link');
+
+	allLinks.forEach((link) => {
+		const href = link.getAttribute('href');
+		let isActive = false;
+
+		if (href === '/') {
+			isActive = currentPath === '/';
+		} else if (href === '/classes') {
+			isActive = currentPath === '/classes' || currentPath.startsWith('/class-details');
+		} else if (href) {
+			isActive = href === currentPath;
+		}
+
+		link.classList.toggle('active', isActive);
+	});
+};
+
 export const initHeader = async () => {
 	const currentPath = window.location.pathname;
 
@@ -168,6 +194,18 @@ export const initHeader = async () => {
 		return;
 	}
 
-	const userRole = await getUserRole(session.user.id);
-	setHeaderActions(true, currentPath, userRole);
+	const cachedRole = sessionStorage.getItem(ROLE_CACHE_KEY);
+
+	if (cachedRole) {
+		setHeaderActions(true, currentPath, cachedRole);
+		// Background refresh to detect role changes without blocking the UI
+		getUserRole(session.user.id).then((freshRole) => {
+			if (freshRole !== cachedRole) {
+				setHeaderActions(true, currentPath, freshRole);
+			}
+		});
+	} else {
+		const userRole = await getUserRole(session.user.id);
+		setHeaderActions(true, currentPath, userRole);
+	}
 };

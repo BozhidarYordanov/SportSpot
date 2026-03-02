@@ -3,6 +3,7 @@ import registerTemplate from './register.html?raw';
 import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
 import { navigateTo } from '../../router';
 import { showToast } from '../../components/toast/toast';
+import { initHeader } from '../../components/header/header';
 
 export const renderRegisterPage = () => registerTemplate;
 
@@ -273,6 +274,7 @@ export const initRegisterPage = () => {
 
       if (data?.session) {
         showToast('Welcome to the club!', 'success');
+        await initHeader();
         navigateTo('/dashboard');
         return;
       }

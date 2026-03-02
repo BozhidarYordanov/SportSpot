@@ -1,4 +1,4 @@
-import { renderHeader, initHeader } from './components/header/header';
+import { renderHeader, initHeader, updateHeaderActiveState } from './components/header/header';
 import { renderFooter } from './components/footer/footer';
 import { renderIndexPage, initIndexPage } from './pages/index/index';
 import { renderLoginPage, initLoginPage } from './pages/login/login';
@@ -114,16 +114,25 @@ const resolveRoute = (path) => {
 
 const renderLayout = (appElement, path) => {
   const { route, params } = resolveRoute(path);
+  const existingContent = document.getElementById('route-content');
 
-  appElement.innerHTML = `
-    ${renderHeader(path)}
-    <main class="container py-4" id="route-content">
-      ${route.render()}
-    </main>
-    ${renderFooter()}
-  `;
+  if (existingContent) {
+    // Header and footer already exist — only swap the page content
+    existingContent.innerHTML = route.render();
+    updateHeaderActiveState(path);
+  } else {
+    // First render — build the full layout
+    appElement.innerHTML = `
+      ${renderHeader(path)}
+      <main class="container py-4" id="route-content">
+        ${route.render()}
+      </main>
+      ${renderFooter()}
+    `;
 
-  initHeader();
+    initHeader();
+  }
+
   route.init({ params, path });
 };
 
