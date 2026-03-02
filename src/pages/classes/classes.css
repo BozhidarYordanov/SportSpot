@@ -34,12 +34,6 @@
   max-width: 65ch;
 }
 
-.classes-filter-wrap {
-  position: sticky;
-  top: 5.9rem;
-  z-index: 20;
-}
-
 .classes-filter-card {
   border: 1px solid rgba(255, 255, 255, 0.78);
   background: rgba(255, 255, 255, 0.72);
@@ -87,6 +81,7 @@
 
 .classes-chip {
   position: relative;
+  cursor: pointer;
 }
 
 .classes-chip input {
@@ -107,6 +102,7 @@
   color: #334155;
   transition: all 0.25s ease;
   user-select: none;
+  cursor: pointer;
 }
 
 .classes-chip span:hover {
@@ -115,10 +111,10 @@
 }
 
 .classes-chip input:checked + span {
-  color: #ffffff;
-  border-color: transparent;
-  background: linear-gradient(120deg, #4f46e5 0%, #7c3aed 100%);
-  box-shadow: 0 10px 24px rgba(99, 102, 241, 0.28);
+  color: #4338ca;
+  border-color: #c7d2fe;
+  background: rgba(99, 102, 241, 0.16);
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.18);
 }
 
 .classes-chip input:focus-visible + span {
@@ -143,6 +139,10 @@
   transform: translateY(5px);
 }
 
+.classes-grid.is-entering {
+  animation: gridFadeIn 0.28s ease;
+}
+
 .classes-grid .col-12 {
   animation: cardFadeUp 0.34s ease both;
 }
@@ -165,8 +165,14 @@
   }
 }
 
-@media (max-width: 991.98px) {
-  .classes-filter-wrap {
-    top: 5.4rem;
+@keyframes gridFadeIn {
+  from {
+    opacity: 0.55;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

@@ -5,7 +5,7 @@
     <p class="classes-subtitle mb-0">Use search and difficulty filters to quickly discover sessions that match your pace.</p>
   </header>
 
-  <section class="classes-filter-wrap mb-4" aria-label="Filter classes">
+  <section class="mb-4" aria-label="Filter classes">
     <div class="classes-filter-card rounded-4 p-3 p-md-4">
       <div class="row g-3 g-lg-4 align-items-end">
         <div class="col-12 col-lg-6">
@@ -38,6 +38,26 @@
               <span>Advanced</span>
             </label>
           </div>
+
+          <p class="classes-filter-label mb-2 mt-3">Category</p>
+          <div class="classes-chip-group" role="group" aria-label="Filter by class category">
+            <label class="classes-chip">
+              <input type="checkbox" value="Cardio" data-category-filter />
+              <span>Cardio</span>
+            </label>
+            <label class="classes-chip">
+              <input type="checkbox" value="Strength" data-category-filter />
+              <span>Strength</span>
+            </label>
+            <label class="classes-chip">
+              <input type="checkbox" value="Mind &amp; Body" data-category-filter />
+              <span>Mind &amp; Body</span>
+            </label>
+            <label class="classes-chip">
+              <input type="checkbox" value="Combat" data-category-filter />
+              <span>Combat</span>
+            </label>
+          </div>
         </div>
       </div>
     </div>
@@ -53,7 +73,7 @@
 
     <div id="classes-empty" class="classes-empty rounded-4 p-4 p-md-5 text-center d-none">
       <h2 class="h4 mb-2">No classes found</h2>
-      <p class="text-secondary mb-4">Try broadening your search or reset filters to see all available classes.</p>
+      <p class="text-secondary mb-4">No workouts found for this criteria. Try clearing the filters.</p>
       <button id="classes-reset-btn" type="button" class="btn btn-primary px-4">Reset Filters</button>
     </div>
   </section>

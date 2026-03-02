@@ -9,7 +9,8 @@ const CLASS_DETAILS_NOTICE_KEY = 'classes_notice';
 const state = {
   workouts: [],
   searchTerm: '',
-  selectedDifficulties: new Set()
+  selectedDifficulties: new Set(),
+  selectedCategories: new Set()
 };
 
 let filterRenderTimeoutId = null;
@@ -54,8 +55,10 @@ const filterWorkouts = (workouts) => {
   return workouts.filter((workout) => {
     const title = String(workout?.title || '').toLowerCase();
     const matchesSearch = title.includes(state.searchTerm);
+    const category = String(workout?.category || '').trim().toLowerCase();
+    const matchesCategory = state.selectedCategories.size === 0 || state.selectedCategories.has(category);
 
-    if (!matchesSearch) {
+    if (!matchesSearch || !matchesCategory) {
       return false;
     }
 
@@ -108,6 +111,10 @@ const renderCards = (workouts) => {
 
     gridElement.innerHTML = cardsMarkup;
     gridElement.classList.remove('is-filtering');
+    gridElement.classList.remove('is-entering');
+    window.requestAnimationFrame(() => {
+      gridElement.classList.add('is-entering');
+    });
 
     const hasResults = workouts.length > 0;
     emptyStateElement.classList.toggle('d-none', hasResults);
@@ -126,9 +133,11 @@ const applyFilters = () => {
 const resetFilters = () => {
   const searchInput = document.querySelector('#classes-search');
   const difficultyInputs = document.querySelectorAll('[data-difficulty-filter]');
+  const categoryInputs = document.querySelectorAll('[data-category-filter]');
 
   state.searchTerm = '';
   state.selectedDifficulties.clear();
+  state.selectedCategories.clear();
 
   if (searchInput) {
     searchInput.value = '';
@@ -138,12 +147,17 @@ const resetFilters = () => {
     inputElement.checked = false;
   });
 
+  categoryInputs.forEach((inputElement) => {
+    inputElement.checked = false;
+  });
+
   applyFilters();
 };
 
 const bindFilterEvents = () => {
   const searchInput = document.querySelector('#classes-search');
   const difficultyInputs = document.querySelectorAll('[data-difficulty-filter]');
+  const categoryInputs = document.querySelectorAll('[data-category-filter]');
   const resetButton = document.querySelector('#classes-reset-btn');
 
   searchInput?.addEventListener('input', (event) => {
@@ -160,6 +174,20 @@ const bindFilterEvents = () => {
         state.selectedDifficulties.add(difficulty);
       } else {
         state.selectedDifficulties.delete(difficulty);
+      }
+
+      applyFilters();
+    });
+  });
+
+  categoryInputs.forEach((inputElement) => {
+    inputElement.addEventListener('change', () => {
+      const normalizedCategory = String(inputElement.value || '').trim().toLowerCase();
+
+      if (inputElement.checked) {
+        state.selectedCategories.add(normalizedCategory);
+      } else {
+        state.selectedCategories.delete(normalizedCategory);
       }
 
       applyFilters();
