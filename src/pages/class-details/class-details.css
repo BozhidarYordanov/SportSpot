@@ -171,14 +171,6 @@
   background: rgba(255, 255, 255, 0.55);
 }
 
-.class-details-side .btn {
-  transition: all 0.3s ease;
-}
-
-.class-details-side .btn:hover {
-  transform: translateY(-3px);
-}
-
 .class-details-feature-list {
   display: grid;
   gap: 0.75rem;
@@ -204,82 +196,4 @@
 
 .class-details-feature-icon path {
   fill: rgba(13, 110, 253, 0.85);
-}
-
-.class-details-confetti {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1059;
-}
-
-.class-details-confetti.is-active .class-details-confetti-piece {
-  animation: classDetailsConfettiFall 900ms ease-out forwards;
-}
-
-.class-details-confetti-piece {
-  position: absolute;
-  top: -12px;
-  width: 8px;
-  height: 14px;
-  border-radius: 3px;
-  opacity: 0;
-}
-
-.class-details-success-overlay {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  background: rgba(255, 255, 255, 0.28);
-  backdrop-filter: blur(8px);
-  z-index: 1060;
-}
-
-.class-details-success-card {
-  min-width: min(320px, 92vw);
-  border: 1px solid #f0f0f0;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-  animation: classDetailsSuccessPop 0.45s ease;
-}
-
-.class-details-success-check {
-  width: 64px;
-  height: 64px;
-  border-radius: 999px;
-  margin: 0 auto 0.75rem;
-  display: grid;
-  place-items: center;
-  background: rgba(25, 135, 84, 0.15);
-}
-
-.class-details-success-check svg {
-  width: 32px;
-  height: 32px;
-  fill: #198754;
-}
-
-@keyframes classDetailsSuccessPop {
-  from {
-    opacity: 0;
-    transform: translateY(6px) scale(0.96);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes classDetailsConfettiFall {
-  from {
-    opacity: 1;
-    transform: translate3d(var(--confetti-x, 0), 0, 0) rotate(0deg);
-  }
-
-  to {
-    opacity: 0;
-    transform: translate3d(var(--confetti-drift, 0), 72vh, 0) rotate(var(--confetti-rotate, 260deg));
-  }
 }

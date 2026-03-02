@@ -6,7 +6,6 @@ import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
 import { navigateTo } from '../../router';
 
 const CLASS_DETAILS_NOTICE_KEY = 'classes_notice';
-const SUCCESS_REDIRECT_DELAY_MS = 1200;
 
 const bulletIconSvg = `
   <svg class="class-details-feature-icon" viewBox="0 0 20 20" focusable="false" aria-hidden="true">
@@ -230,25 +229,6 @@ const renderHeroBackground = (workout) => {
   heroElement.classList.add('has-image');
 };
 
-const setReserveLoading = (isLoading) => {
-  const reserveButton = document.querySelector('#class-details-reserve-btn');
-  const labelElement = reserveButton?.querySelector('.class-details-reserve-label');
-
-  if (!reserveButton || !labelElement) {
-    return;
-  }
-
-  reserveButton.disabled = isLoading;
-  reserveButton.classList.toggle('class-details-reserve-loading', isLoading);
-
-  if (isLoading) {
-    labelElement.innerHTML = '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Reserving...';
-    return;
-  }
-
-  labelElement.textContent = 'Reserve This Class';
-};
-
 const reserveSchedule = async (scheduleId) => {
   if (!currentWorkout?.id || !scheduleId) {
     setFeedback('Class data is not ready yet. Please refresh and try again.');
@@ -383,9 +363,7 @@ const bindSessionBookingActions = () => {
         bookedScheduleIds.add(scheduleId);
         setSessionBookedState(reserveButton, true);
         showToast('Spot reserved! See you there.', 'success');
-        window.setTimeout(() => {
-          navigateTo('/dashboard');
-        }, SUCCESS_REDIRECT_DELAY_MS);
+        navigateTo('/dashboard');
       }
     } catch (error) {
       setSessionButtonLoading(reserveButton, false);
@@ -469,7 +447,6 @@ export const initClassDetailsPage = async ({ params } = {}) => {
   }
 
   setFeedback('');
-  setReserveLoading(false);
   bindSessionBookingActions();
 
   await loadWorkoutBySlug(slug);
