@@ -36,6 +36,7 @@
                 <th scope="col">Workout Title</th>
                 <th scope="col">Time</th>
                 <th scope="col">Status</th>
+                <th scope="col" class="text-end">Actions</th>
               </tr>
             </thead>
             <tbody id="admin-bookings-body"></tbody>
@@ -282,6 +283,24 @@
         <div class="modal-footer border-0 pt-0">
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Keep Session</button>
           <button type="button" class="btn btn-danger" id="admin-confirm-delete-session-btn">Delete Session</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="admin-cancel-booking-modal" tabindex="-1" aria-labelledby="admin-cancel-booking-label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content admin-modal">
+        <div class="modal-header border-0 pb-0">
+          <h3 class="modal-title h5" id="admin-cancel-booking-label">Cancel Booking</h3>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body pt-3">
+          <p class="mb-0" id="admin-cancel-booking-copy">Are you sure you want to cancel this booking?</p>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Keep Booking</button>
+          <button type="button" class="btn btn-danger" id="admin-confirm-cancel-booking-btn">Cancel Booking</button>
         </div>
       </div>
     </div>

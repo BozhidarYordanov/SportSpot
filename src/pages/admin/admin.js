@@ -16,11 +16,13 @@ const state = {
   activeTab: 'bookings',
   selectedWorkoutToDelete: null,
   selectedSessionToDelete: null,
+  selectedBookingToCancel: null,
   modals: {
     workout: null,
     deleteWorkout: null,
     session: null,
-    deleteSession: null
+    deleteSession: null,
+    cancelBooking: null
   },
   toast: null
 };
@@ -324,6 +326,10 @@ const renderTodayBookingRows = () => {
       const status = booking?.status || 'upcoming';
       const statusLabel = status === 'past' ? 'Completed' : 'Upcoming';
       const statusClass = status === 'past' ? 'admin-status-past' : 'admin-status-upcoming';
+      const canCancel = status !== 'past';
+      const actionCell = canCancel
+        ? `<button type="button" class="btn btn-sm btn-outline-danger admin-cancel-booking-btn" data-action="cancel-booking" data-id="${booking.id}">Cancel</button>`
+        : '<span class="text-secondary">—</span>';
 
       return `
         <tr>
@@ -331,10 +337,32 @@ const renderTodayBookingRows = () => {
           <td>${escapeHtml(workoutTitle)}</td>
           <td>${escapeHtml(formatTime(booking?.schedule?.start_time))}</td>
           <td><span class="admin-status-pill ${statusClass}">${escapeHtml(statusLabel)}</span></td>
+          <td class="text-end">${actionCell}</td>
         </tr>
       `;
     })
     .join('');
+};
+
+const openCancelBookingModal = (bookingId) => {
+  const booking = state.todayBookings.find((item) => item.id === bookingId);
+
+  if (!booking || booking.status === 'past') {
+    return;
+  }
+
+  state.selectedBookingToCancel = booking.id;
+  const userName =
+    booking?.profile?.full_name?.trim() || booking?.guest_name?.trim() || booking?.profile?.email?.trim() || booking?.guest_email?.trim() || 'Guest';
+  const workoutTitle = booking?.schedule?.workout_type?.title || 'Workout Session';
+  const bookingTime = formatTime(booking?.schedule?.start_time);
+  const copyElement = document.querySelector('#admin-cancel-booking-copy');
+
+  if (copyElement) {
+    copyElement.textContent = `Cancel ${userName}'s booking for ${workoutTitle} at ${bookingTime}? This will free one spot in the schedule.`;
+  }
+
+  state.modals.cancelBooking?.show();
 };
 
 const renderRegistrationData = (counts) => {
@@ -702,6 +730,11 @@ const bindTableActions = () => {
 
     if (action === 'delete-session') {
       openDeleteSessionModal(id);
+      return;
+    }
+
+    if (action === 'cancel-booking') {
+      openCancelBookingModal(id);
     }
   });
 };
@@ -971,17 +1004,51 @@ const bindDeleteSession = () => {
   });
 };
 
+const bindCancelBooking = () => {
+  const buttonElement = document.querySelector('#admin-confirm-cancel-booking-btn');
+
+  buttonElement?.addEventListener('click', async () => {
+    if (!state.selectedBookingToCancel) {
+      return;
+    }
+
+    buttonElement.disabled = true;
+    buttonElement.textContent = 'Canceling...';
+
+    try {
+      const { error } = await supabase.from('bookings').delete().eq('id', state.selectedBookingToCancel);
+
+      if (error) {
+        throw error;
+      }
+
+      state.selectedBookingToCancel = null;
+      state.modals.cancelBooking?.hide();
+      await Promise.all([loadTodayBookings(), loadUpcomingSessions()]);
+      showToast('Booking canceled successfully. Spot is available again.');
+      setFeedback('#admin-feedback', '', false);
+    } catch (error) {
+      setFeedback('#admin-feedback', error?.message || 'Unable to cancel booking right now.');
+    } finally {
+      buttonElement.disabled = false;
+      buttonElement.textContent = 'Cancel Booking';
+    }
+  });
+};
+
 const initModalsAndToast = () => {
   const workoutModalElement = document.querySelector('#admin-edit-workout-modal');
   const deleteWorkoutModalElement = document.querySelector('#admin-delete-workout-modal');
   const sessionModalElement = document.querySelector('#admin-session-modal');
   const deleteSessionModalElement = document.querySelector('#admin-delete-session-modal');
+  const cancelBookingModalElement = document.querySelector('#admin-cancel-booking-modal');
   const toastElement = document.querySelector('#admin-toast');
 
   state.modals.workout = workoutModalElement ? Modal.getOrCreateInstance(workoutModalElement) : null;
   state.modals.deleteWorkout = deleteWorkoutModalElement ? Modal.getOrCreateInstance(deleteWorkoutModalElement) : null;
   state.modals.session = sessionModalElement ? Modal.getOrCreateInstance(sessionModalElement) : null;
   state.modals.deleteSession = deleteSessionModalElement ? Modal.getOrCreateInstance(deleteSessionModalElement) : null;
+  state.modals.cancelBooking = cancelBookingModalElement ? Modal.getOrCreateInstance(cancelBookingModalElement) : null;
   state.toast = toastElement ? Toast.getOrCreateInstance(toastElement) : null;
 };
 
@@ -1020,6 +1087,7 @@ export const initAdminPage = async () => {
   bindDeleteWorkout();
   bindSessionForm();
   bindDeleteSession();
+  bindCancelBooking();
   switchTab(state.activeTab);
 
   try {
