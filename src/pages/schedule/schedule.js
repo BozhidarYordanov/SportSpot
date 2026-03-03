@@ -4,6 +4,7 @@ import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
 import { navigateTo } from '../../router';
 import { renderDifficultyBadge } from '../../components/difficulty-badge/difficulty-badge';
 import { showToast } from '../../components/toast/toast';
+import { setPageTitle } from '../../lib/pageTitle';
 
 const DAYS_VISIBLE = 12;
 const WEEK_SHIFT_DAYS = 7;
@@ -596,6 +597,8 @@ function bindSessionActions() {
 }
 
 export const initSchedulePage = async () => {
+  setPageTitle('Schedule');
+
   if (!isSupabaseConfigured || !supabase) {
     setFeedback(
       'Missing Supabase configuration. Please set VITE_SUPABASE_URL (or SUPABASE_URL) and VITE_SUPABASE_ANON_KEY (or VITE_SUPABASE_PUBLISHABLE_KEY).'

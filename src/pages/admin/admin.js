@@ -4,6 +4,7 @@ import { Modal } from 'bootstrap';
 import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
 import { navigateTo } from '../../router';
 import { showToast } from '../../components/toast/toast';
+import { setPageTitle } from '../../lib/pageTitle';
 
 const CATEGORY_OPTIONS = ['Cardio', 'Strength', 'Mind & Body', 'Combat', 'Other'];
 const DEFAULT_CAPACITY = 20;
@@ -1235,6 +1236,8 @@ const initModalsAndToast = () => {
 };
 
 export const initAdminPage = async () => {
+  setPageTitle('Admin');
+
   if (!isSupabaseConfigured || !supabase) {
     setFeedback(
       '#admin-feedback',

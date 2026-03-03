@@ -3,6 +3,7 @@ import classesTemplate from './classes.html?raw';
 import { createClassCard } from '../../components/class-card/class-card';
 import { destroyFilters, getFiltersState, initFilters, renderFilters, resetFilters } from '../../components/filters/filters';
 import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
+import { setPageTitle } from '../../lib/pageTitle';
 
 const FILTER_TRANSITION_MS = 160;
 const CLASS_DETAILS_NOTICE_KEY = 'classes_notice';
@@ -185,6 +186,8 @@ const loadWorkouts = async () => {
 };
 
 export const initClassesPage = async () => {
+  setPageTitle('Classes');
+
   destroyFilters();
   mountFilters();
   initFilters({ onChange: renderWorkouts });

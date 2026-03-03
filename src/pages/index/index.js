@@ -3,6 +3,7 @@ import indexTemplate from './index.html?raw';
 import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
 import { renderClassCard } from '../../components/class-card/class-card';
 import { navigateTo } from '../../router';
+import { setPageTitle } from '../../lib/pageTitle';
 
 export const renderIndexPage = () => indexTemplate;
 
@@ -414,6 +415,8 @@ const loadTopClasses = async () => {
 };
 
 export const initIndexPage = async () => {
+	setPageTitle('Home');
+
 	const getStartedButton = document.querySelector('#hero-get-started-btn');
 	state.isAuthenticated = false;
 	state.userId = null;

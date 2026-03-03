@@ -4,6 +4,7 @@ import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
 import { navigateTo } from '../../router';
 import { showToast } from '../../components/toast/toast';
 import { initHeader } from '../../components/header/header';
+import { setPageTitle } from '../../lib/pageTitle';
 
 export const renderRegisterPage = () => registerTemplate;
 
@@ -163,6 +164,8 @@ const setPasswordStrengthMeter = (meterElement, password = '') => {
 };
 
 export const initRegisterPage = () => {
+  setPageTitle('Register');
+
   const formElement = document.querySelector('#register-form');
   const submitButton = document.querySelector('#register-submit');
   const feedbackElement = document.querySelector('#register-feedback');

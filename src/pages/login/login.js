@@ -4,6 +4,7 @@ import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
 import { navigateTo } from '../../router';
 import { showToast } from '../../components/toast/toast';
 import { initHeader } from '../../components/header/header';
+import { setPageTitle } from '../../lib/pageTitle';
 
 export const renderLoginPage = () => loginTemplate;
 
@@ -94,6 +95,8 @@ const setSubmitLoading = (buttonElement, isLoading) => {
 };
 
 export const initLoginPage = () => {
+  setPageTitle('Login');
+
   const formElement = document.querySelector('#login-form');
   const submitButton = document.querySelector('#login-submit');
   const feedbackElement = document.querySelector('#login-feedback');

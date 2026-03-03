@@ -4,6 +4,7 @@ import { renderDifficultyBadge } from '../../components/difficulty-badge/difficu
 import { showToast } from '../../components/toast/toast';
 import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
 import { navigateTo } from '../../router';
+import { setPageTitle } from '../../lib/pageTitle';
 
 const CLASS_DETAILS_NOTICE_KEY = 'classes_notice';
 
@@ -384,6 +385,8 @@ const renderClassDetails = (workout) => {
     titleElement.textContent = workout.title || 'Workout';
   }
 
+  setPageTitle(workout.title || 'Class Details');
+
   if (subtitleElement) {
     subtitleElement.textContent = workout.description || 'Train with confidence in this guided class.';
   }
@@ -432,6 +435,8 @@ const loadWorkoutBySlug = async (slug) => {
 };
 
 export const initClassDetailsPage = async ({ params } = {}) => {
+  setPageTitle('Class Details');
+
   const slug = normalizeSlug(params?.slug);
 
   if (!slug) {

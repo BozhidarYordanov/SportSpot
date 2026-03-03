@@ -4,6 +4,7 @@ import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
 import { navigateTo } from '../../router';
 import { showToast } from '../../components/toast/toast';
 import { getUserRole } from '../../components/header/header';
+import { setPageTitle } from '../../lib/pageTitle';
 
 export const renderProfilePage = () => profileTemplate;
 const PROFILE_UPDATED_EVENT = 'sportspot:profile-updated';
@@ -295,6 +296,8 @@ const bindPasswordForm = () => {
 };
 
 export const initProfilePage = async () => {
+  setPageTitle('Profile');
+
   if (!isSupabaseConfigured || !supabase) {
     showToast('Missing Supabase configuration. Please set your environment variables.', 'error');
     navigateTo('/login');

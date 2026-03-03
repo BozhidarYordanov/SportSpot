@@ -4,6 +4,7 @@ import { createClassCard } from '../../components/class-card/class-card';
 import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
 import { navigateTo } from '../../router';
 import { showToast } from '../../components/toast/toast';
+import { setPageTitle } from '../../lib/pageTitle';
 
 export const renderDashboardPage = () => dashboardTemplate;
 
@@ -361,6 +362,8 @@ const renderDashboardView = ({ fullName, bookings }) => {
 };
 
 export const initDashboardPage = async () => {
+	setPageTitle('Dashboard');
+
 	bindBookClassActions();
 
 	if (!isSupabaseConfigured || !supabase) {
