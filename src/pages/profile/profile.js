@@ -6,6 +6,7 @@ import { showToast } from '../../components/toast/toast';
 import { getUserRole } from '../../components/header/header';
 
 export const renderProfilePage = () => profileTemplate;
+const PROFILE_UPDATED_EVENT = 'sportspot:profile-updated';
 
 const state = {
   userId: null,
@@ -55,6 +56,18 @@ const setButtonLoading = (buttonElement, isLoading, idleLabel, loadingLabel) => 
   buttonElement.innerHTML = isLoading
     ? `<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>${loadingLabel}`
     : idleLabel;
+};
+
+const emitProfileUpdated = () => {
+  window.dispatchEvent(
+    new CustomEvent(PROFILE_UPDATED_EVENT, {
+      detail: {
+        fullName: state.profile.fullName,
+        email: state.profile.email,
+        avatarUrl: state.profile.avatarUrl
+      }
+    })
+  );
 };
 
 const renderAvatar = ({ avatarUrl, fullName, email }) => {
@@ -124,6 +137,7 @@ const loadProfile = async (user) => {
 
   state.profile = { fullName, email, phone, avatarUrl };
   populateProfileForm(state.profile);
+  emitProfileUpdated();
 };
 
 const uploadAvatar = async (file, userId) => {
@@ -154,6 +168,7 @@ const uploadAvatar = async (file, userId) => {
 
   state.profile.avatarUrl = publicUrl;
   renderAvatar(state.profile);
+  emitProfileUpdated();
   showToast('Photo uploaded!', 'success');
 };
 
@@ -264,6 +279,7 @@ const bindProfileForm = () => {
       state.profile.phone = phone;
 
       renderAvatar(state.profile);
+      emitProfileUpdated();
       setTextFeedback(feedbackElement, 'Saved successfully.', false);
       showToast('Profile updated!', 'success');
     } catch (error) {

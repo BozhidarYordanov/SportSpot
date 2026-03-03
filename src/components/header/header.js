@@ -2,6 +2,8 @@ import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
 import { navigateTo } from '../../router';
 import { showToast } from '../toast/toast';
 
+const PROFILE_UPDATED_EVENT = 'sportspot:profile-updated';
+
 const renderGuestActions = () => `
 	<a class="btn btn-sm btn-outline-secondary px-3" href="/login" data-link>Login</a>
 	<a class="btn btn-sm btn-primary px-3" href="/register" data-link>Register</a>
@@ -31,7 +33,63 @@ const renderLogoutButton = () => `
 	<button type="button" class="btn btn-sm btn-primary px-3" id="header-logout-btn">Logout</button>
 `;
 
+const escapeHtml = (value) =>
+	String(value ?? '')
+		.replaceAll('&', '&amp;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;')
+		.replaceAll('"', '&quot;')
+		.replaceAll("'", '&#39;');
+
+const getInitials = (fullName, email) => {
+	const fromName = String(fullName || '')
+		.trim()
+		.split(/\s+/)
+		.filter(Boolean)
+		.slice(0, 2)
+		.map((part) => part[0]?.toUpperCase() || '')
+		.join('');
+
+	if (fromName) {
+		return fromName;
+	}
+
+	return String(email || '').trim().charAt(0).toUpperCase() || 'U';
+};
+
+const normalizeProfileData = (profileData = {}) => ({
+	fullName: String(profileData?.fullName || '').trim(),
+	email: String(profileData?.email || '').trim(),
+	avatarUrl: String(profileData?.avatarUrl || '').trim()
+});
+
+const renderHeaderAvatar = (profileData = {}, currentPath = '/') => {
+	const normalizedProfile = normalizeProfileData(profileData);
+	const initials = getInitials(normalizedProfile.fullName, normalizedProfile.email);
+	const isProfileActive = currentPath === '/profile';
+	const labelName = normalizedProfile.fullName || 'Profile';
+
+	return `
+		<a
+			id="header-profile-link"
+			class="header-profile-avatar-link${isProfileActive ? ' is-active' : ''}"
+			href="/profile"
+			data-link
+			aria-label="Open profile for ${escapeHtml(labelName)}"
+			title="Profile"
+		>
+			${
+				normalizedProfile.avatarUrl
+					? `<img src="${escapeHtml(normalizedProfile.avatarUrl)}" alt="${escapeHtml(labelName)} avatar" class="header-profile-avatar-image" />`
+					: `<span class="header-profile-avatar-fallback">${escapeHtml(initials)}</span>`
+			}
+		</a>
+	`;
+};
+
 const ROLE_CACHE_KEY = 'user_role';
+let currentHeaderProfile = normalizeProfileData();
+let isProfileSyncListenerBound = false;
 
 export const getUserRole = async (userId) => {
 	if (!userId) {
@@ -95,8 +153,10 @@ const setHeaderActions = (isAuthenticated, currentPath = '/', userRole = 'user')
 		);
 	}
 
-	// Set logout button
-	logoutContainer.innerHTML = isAuthenticated ? renderLogoutButton() : renderGuestActions();
+	// Set auth actions
+	logoutContainer.innerHTML = isAuthenticated
+		? `${renderHeaderAvatar(currentHeaderProfile, currentPath)}${renderLogoutButton()}`
+		: renderGuestActions();
 
 	const logoutButton = document.querySelector('#header-logout-btn');
 
@@ -115,6 +175,7 @@ const setHeaderActions = (isAuthenticated, currentPath = '/', userRole = 'user')
 			}
 
 			sessionStorage.removeItem(ROLE_CACHE_KEY);
+			currentHeaderProfile = normalizeProfileData();
 			setHeaderActions(false, '/');
 			showToast('Logged out safely', 'success');
 			navigateTo('/');
@@ -122,6 +183,71 @@ const setHeaderActions = (isAuthenticated, currentPath = '/', userRole = 'user')
 			showToast(error?.message || 'Unable to log out right now. Please try again.', 'error');
 		}
 	});
+};
+
+const updateHeaderAvatarElement = (profileData = {}) => {
+	const profileLink = document.querySelector('#header-profile-link');
+
+	if (!profileLink) {
+		return;
+	}
+
+	const normalizedProfile = normalizeProfileData(profileData);
+	currentHeaderProfile = normalizedProfile;
+
+	const initials = getInitials(normalizedProfile.fullName, normalizedProfile.email);
+	const labelName = normalizedProfile.fullName || 'Profile';
+
+	profileLink.setAttribute('aria-label', `Open profile for ${labelName}`);
+
+	if (normalizedProfile.avatarUrl) {
+		profileLink.innerHTML = `<img src="${escapeHtml(normalizedProfile.avatarUrl)}" alt="${escapeHtml(labelName)} avatar" class="header-profile-avatar-image" />`;
+		return;
+	}
+
+	profileLink.innerHTML = `<span class="header-profile-avatar-fallback">${escapeHtml(initials)}</span>`;
+};
+
+const bindProfileSyncListener = () => {
+	if (isProfileSyncListenerBound) {
+		return;
+	}
+
+	window.addEventListener(PROFILE_UPDATED_EVENT, (event) => {
+		updateHeaderAvatarElement(event?.detail || {});
+	});
+
+	isProfileSyncListenerBound = true;
+};
+
+const fetchHeaderProfile = async (user) => {
+	if (!user?.id) {
+		return normalizeProfileData();
+	}
+
+	try {
+		const { data, error } = await supabase
+			.from('profiles')
+			.select('full_name, email, avatar_url')
+			.eq('id', user.id)
+			.maybeSingle();
+
+		if (error) {
+			throw error;
+		}
+
+		return normalizeProfileData({
+			fullName: data?.full_name || user.user_metadata?.full_name,
+			email: data?.email || user.email,
+			avatarUrl: data?.avatar_url
+		});
+	} catch (error) {
+		return normalizeProfileData({
+			fullName: user.user_metadata?.full_name,
+			email: user.email,
+			avatarUrl: ''
+		});
+	}
 };
 
 const getNavLinkClass = (isActive) => `nav-link${isActive ? ' active' : ''}`;
@@ -184,6 +310,7 @@ export const initHeader = async () => {
 	const currentPath = window.location.pathname;
 
 	if (!isSupabaseConfigured || !supabase) {
+		currentHeaderProfile = normalizeProfileData();
 		setHeaderActions(false, currentPath);
 		return;
 	}
@@ -193,9 +320,13 @@ export const initHeader = async () => {
 	} = await supabase.auth.getSession();
 
 	if (!session?.user?.id) {
+		currentHeaderProfile = normalizeProfileData();
 		setHeaderActions(false, currentPath);
 		return;
 	}
+
+	bindProfileSyncListener();
+	currentHeaderProfile = await fetchHeaderProfile(session.user);
 
 	const cachedRole = sessionStorage.getItem(ROLE_CACHE_KEY);
 
