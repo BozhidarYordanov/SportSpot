@@ -17,7 +17,10 @@ const renderAuthenticatedActions = (options = {}) => {
 		${
 			showAdminLink
 				? `<li class="nav-item">
-					<a class="${getNavLinkClass(isAdminActive)}" href="/admin" data-link>[Admin]</a>
+					<a class="${getNavLinkClass(isAdminActive)} nav-link-admin" href="/admin" data-link>
+						<i class="bi bi-shield-lock" aria-hidden="true"></i>
+						<span>Admin</span>
+					</a>
 				</li>`
 				: ''
 		}
