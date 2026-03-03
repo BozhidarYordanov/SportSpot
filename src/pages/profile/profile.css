@@ -113,6 +113,43 @@
   box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.2);
 }
 
+.profile-email-field-wrap {
+  position: relative;
+}
+
+.profile-email-lock {
+  position: absolute;
+  right: 0.95rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 0.95rem;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.profile-page .form-control.profile-email-readonly {
+  padding-right: 2.35rem;
+  background: rgba(248, 250, 252, 0.95);
+  border-color: #e5e7eb;
+}
+
+.profile-page .form-control.profile-email-readonly,
+.profile-page .form-control.profile-email-readonly:hover,
+.profile-page .form-control.profile-email-readonly:focus {
+  cursor: not-allowed;
+}
+
+.profile-page .form-control.profile-email-readonly:focus {
+  box-shadow: 0 0 0 0.2rem rgba(148, 163, 184, 0.18);
+  border-color: #cbd5e1;
+}
+
+.profile-email-help {
+  font-size: 0.8rem;
+  color: rgba(71, 85, 105, 0.82);
+}
+
 @media (max-width: 991.98px) {
   .profile-glass-card:hover {
     transform: none;

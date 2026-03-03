@@ -18,8 +18,6 @@ const state = {
   }
 };
 
-const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
 const getInitials = (fullName, email) => {
   const fromName = String(fullName || '')
     .trim()
@@ -220,18 +218,12 @@ const bindProfileForm = () => {
     event.preventDefault();
 
     const fullName = fullNameInput.value.trim();
-    const email = emailInput.value.trim();
     const phone = phoneInput.value.trim();
 
     setTextFeedback(feedbackElement, '');
 
     if (fullName.length < 2) {
       setTextFeedback(feedbackElement, 'Full name must be at least 2 characters.');
-      return;
-    }
-
-    if (!isValidEmail(email)) {
-      setTextFeedback(feedbackElement, 'Please enter a valid email address.');
       return;
     }
 
@@ -243,29 +235,19 @@ const bindProfileForm = () => {
     setButtonLoading(submitButton, true, 'Save Changes', 'Saving...');
 
     try {
-      const updates = [
-        supabase
-          .from('profiles')
-          .update({
-            full_name: fullName,
-            phone
-          })
-          .eq('id', state.userId)
-      ];
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: fullName,
+          phone
+        })
+        .eq('id', state.userId);
 
-      if (email !== state.profile.email) {
-        updates.push(supabase.auth.updateUser({ email }));
-      }
-
-      const results = await Promise.all(updates);
-      const operationError = results.find((result) => result?.error)?.error;
-
-      if (operationError) {
-        throw operationError;
+      if (error) {
+        throw error;
       }
 
       state.profile.fullName = fullName;
-      state.profile.email = email;
       state.profile.phone = phone;
 
       renderAvatar(state.profile);

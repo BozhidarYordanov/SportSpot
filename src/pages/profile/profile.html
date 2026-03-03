@@ -38,10 +38,22 @@
             <label for="profile-full-name">Full Name</label>
           </div>
 
-          <div class="form-floating mb-3">
-            <input id="profile-email" class="form-control" type="email" placeholder="name@example.com" required autocomplete="email" />
+          <div class="form-floating mb-1 profile-email-field-wrap">
+            <input
+              id="profile-email"
+              class="form-control profile-email-readonly"
+              type="email"
+              placeholder="name@example.com"
+              required
+              autocomplete="email"
+              readonly
+              title="Email is used for account identity and cannot be changed here."
+            />
             <label for="profile-email">Email</label>
+            <i class="bi bi-lock-fill profile-email-lock" aria-hidden="true"></i>
           </div>
+
+          <p class="profile-email-help mb-3">Email is used for account identity and cannot be changed directly. Contact support for help.</p>
 
           <div class="form-floating mb-3">
             <input id="profile-phone" class="form-control" type="tel" placeholder="Phone" required autocomplete="tel" />
