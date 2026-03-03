@@ -243,35 +243,25 @@ const bindProfileForm = () => {
     setButtonLoading(submitButton, true, 'Save Changes', 'Saving...');
 
     try {
-      const authPayload = {};
+      const updates = [
+        supabase
+          .from('profiles')
+          .update({
+            full_name: fullName,
+            phone
+          })
+          .eq('id', state.userId)
+      ];
 
       if (email !== state.profile.email) {
-        authPayload.email = email;
+        updates.push(supabase.auth.updateUser({ email }));
       }
 
-      if (phone !== state.profile.phone) {
-        authPayload.phone = phone;
-      }
+      const results = await Promise.all(updates);
+      const operationError = results.find((result) => result?.error)?.error;
 
-      if (Object.keys(authPayload).length > 0) {
-        const { error: authUpdateError } = await supabase.auth.updateUser(authPayload);
-
-        if (authUpdateError) {
-          throw authUpdateError;
-        }
-      }
-
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({
-          full_name: fullName,
-          email,
-          phone
-        })
-        .eq('id', state.userId);
-
-      if (profileError) {
-        throw profileError;
+      if (operationError) {
+        throw operationError;
       }
 
       state.profile.fullName = fullName;
@@ -280,8 +270,8 @@ const bindProfileForm = () => {
 
       renderAvatar(state.profile);
       emitProfileUpdated();
-      setTextFeedback(feedbackElement, 'Saved successfully.', false);
-      showToast('Profile updated!', 'success');
+      setTextFeedback(feedbackElement, 'Profile updated successfully!', false);
+      showToast('Profile updated successfully!', 'success');
     } catch (error) {
       const message = error?.message || 'Unable to update profile right now. Please try again.';
       setTextFeedback(feedbackElement, message);
