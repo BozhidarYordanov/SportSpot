@@ -34,17 +34,6 @@ const getInitials = (fullName, email) => {
   return String(email || '').trim().charAt(0).toUpperCase() || 'U';
 };
 
-const setTextFeedback = (element, message = '', isError = true) => {
-  if (!element) {
-    return;
-  }
-
-  element.textContent = message;
-  element.classList.toggle('d-none', !message);
-  element.classList.toggle('text-danger', Boolean(message) && isError);
-  element.classList.toggle('text-success', Boolean(message) && !isError);
-};
-
 const setButtonLoading = (buttonElement, isLoading, idleLabel, loadingLabel) => {
   if (!buttonElement) {
     return;
@@ -205,12 +194,11 @@ const bindPhotoUpload = () => {
 const bindProfileForm = () => {
   const formElement = document.querySelector('#profile-details-form');
   const submitButton = document.querySelector('#profile-details-submit');
-  const feedbackElement = document.querySelector('#profile-details-feedback');
   const fullNameInput = document.querySelector('#profile-full-name');
   const emailInput = document.querySelector('#profile-email');
   const phoneInput = document.querySelector('#profile-phone');
 
-  if (!formElement || !submitButton || !fullNameInput || !emailInput || !phoneInput || !feedbackElement) {
+  if (!formElement || !submitButton || !fullNameInput || !emailInput || !phoneInput) {
     return;
   }
 
@@ -220,15 +208,13 @@ const bindProfileForm = () => {
     const fullName = fullNameInput.value.trim();
     const phone = phoneInput.value.trim();
 
-    setTextFeedback(feedbackElement, '');
-
     if (fullName.length < 2) {
-      setTextFeedback(feedbackElement, 'Full name must be at least 2 characters.');
+      showToast('Full name must be at least 2 characters.', 'error');
       return;
     }
 
     if (!phone) {
-      setTextFeedback(feedbackElement, 'Please enter your phone number.');
+      showToast('Please enter your phone number.', 'error');
       return;
     }
 
@@ -252,11 +238,9 @@ const bindProfileForm = () => {
 
       renderAvatar(state.profile);
       emitProfileUpdated();
-      setTextFeedback(feedbackElement, 'Profile updated successfully!', false);
       showToast('Profile updated successfully!', 'success');
     } catch (error) {
       const message = error?.message || 'Unable to update profile right now. Please try again.';
-      setTextFeedback(feedbackElement, message);
       showToast(message, 'error');
     } finally {
       setButtonLoading(submitButton, false, 'Save Changes', 'Saving...');
@@ -267,11 +251,10 @@ const bindProfileForm = () => {
 const bindPasswordForm = () => {
   const formElement = document.querySelector('#profile-password-form');
   const submitButton = document.querySelector('#profile-password-submit');
-  const feedbackElement = document.querySelector('#profile-password-feedback');
   const newPasswordInput = document.querySelector('#profile-new-password');
   const confirmPasswordInput = document.querySelector('#profile-confirm-password');
 
-  if (!formElement || !submitButton || !feedbackElement || !newPasswordInput || !confirmPasswordInput) {
+  if (!formElement || !submitButton || !newPasswordInput || !confirmPasswordInput) {
     return;
   }
 
@@ -281,15 +264,13 @@ const bindPasswordForm = () => {
     const newPassword = newPasswordInput.value;
     const confirmPassword = confirmPasswordInput.value;
 
-    setTextFeedback(feedbackElement, '');
-
     if (newPassword.length < 6) {
-      setTextFeedback(feedbackElement, 'Password must be at least 6 characters.');
+      showToast('Password must be at least 6 characters.', 'error');
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setTextFeedback(feedbackElement, 'Passwords do not match.');
+      showToast('Passwords do not match.', 'error');
       return;
     }
 
@@ -303,11 +284,9 @@ const bindPasswordForm = () => {
       }
 
       formElement.reset();
-      setTextFeedback(feedbackElement, 'Password updated successfully.', false);
       showToast('Password changed!', 'success');
     } catch (error) {
       const message = error?.message || 'Unable to change password right now. Please try again.';
-      setTextFeedback(feedbackElement, message);
       showToast(message, 'error');
     } finally {
       setButtonLoading(submitButton, false, 'Change Password', 'Updating...');
