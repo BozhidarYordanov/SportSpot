@@ -3,6 +3,7 @@ import { navigateTo } from '../../router';
 import { showToast } from '../toast/toast';
 
 const PROFILE_UPDATED_EVENT = 'sportspot:profile-updated';
+const ROLE_CACHE_KEY = 'user_role';
 
 const renderGuestActions = () => `
 	<a class="btn btn-sm btn-outline-secondary px-3" href="/login" data-link>Login</a>
@@ -28,10 +29,6 @@ const renderAuthenticatedActions = (options = {}) => {
 		}
 	`;
 };
-
-const renderLogoutButton = () => `
-	<button type="button" class="btn btn-sm btn-primary px-3" id="header-logout-btn">Logout</button>
-`;
 
 const escapeHtml = (value) =>
 	String(value ?? '')
@@ -70,24 +67,43 @@ const renderHeaderAvatar = (profileData = {}, currentPath = '/') => {
 	const labelName = normalizedProfile.fullName || 'Profile';
 
 	return `
-		<a
-			id="header-profile-link"
+		<button
+			type="button"
+			id="header-user-menu-trigger"
 			class="header-profile-avatar-link${isProfileActive ? ' is-active' : ''}"
-			href="/profile"
-			data-link
-			aria-label="Open profile for ${escapeHtml(labelName)}"
-			title="Profile"
+			aria-label="Open user menu for ${escapeHtml(labelName)}"
+			aria-haspopup="menu"
+			aria-expanded="false"
+			title="Account"
 		>
-			${
-				normalizedProfile.avatarUrl
-					? `<img src="${escapeHtml(normalizedProfile.avatarUrl)}" alt="${escapeHtml(labelName)} avatar" class="header-profile-avatar-image" />`
-					: `<span class="header-profile-avatar-fallback">${escapeHtml(initials)}</span>`
-			}
-		</a>
+			<span id="header-user-avatar-content">
+				${
+					normalizedProfile.avatarUrl
+						? `<img src="${escapeHtml(normalizedProfile.avatarUrl)}" alt="${escapeHtml(labelName)} avatar" class="header-profile-avatar-image" />`
+						: `<span class="header-profile-avatar-fallback">${escapeHtml(initials)}</span>`
+				}
+			</span>
+		</button>
 	`;
 };
 
-const ROLE_CACHE_KEY = 'user_role';
+const renderUserDropdown = (currentPath = '/') => `
+	<div class="header-user-menu" id="header-user-menu">
+		${renderHeaderAvatar(currentHeaderProfile, currentPath)}
+		<div class="header-user-dropdown" id="header-user-menu-dropdown" role="menu" aria-label="User actions">
+			<a class="header-user-dropdown-item${currentPath === '/profile' ? ' active' : ''}" href="/profile" data-link role="menuitem">
+				<i class="bi bi-person" aria-hidden="true"></i>
+				<span>Profile</span>
+			</a>
+			<button type="button" class="header-user-dropdown-item header-user-dropdown-item-logout" id="header-logout-btn" role="menuitem">
+				<i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+				<span>Logout</span>
+			</button>
+		</div>
+	</div>
+`;
+
+let clearUserMenuListeners = null;
 let currentHeaderProfile = normalizeProfileData();
 let isProfileSyncListenerBound = false;
 
@@ -130,6 +146,11 @@ const setHeaderActions = (isAuthenticated, currentPath = '/', userRole = 'user')
 		return;
 	}
 
+	if (clearUserMenuListeners) {
+		clearUserMenuListeners();
+		clearUserMenuListeners = null;
+	}
+
 	// Remove existing Dashboard nav item if present
 	const existingDashboard = navList.querySelector('[href="/dashboard"]');
 	if (existingDashboard) {
@@ -155,17 +176,74 @@ const setHeaderActions = (isAuthenticated, currentPath = '/', userRole = 'user')
 
 	// Set auth actions
 	logoutContainer.innerHTML = isAuthenticated
-		? `${renderHeaderAvatar(currentHeaderProfile, currentPath)}${renderLogoutButton()}`
+		? renderUserDropdown(currentPath)
 		: renderGuestActions();
 
-	const logoutButton = document.querySelector('#header-logout-btn');
-
-	if (!logoutButton) {
+	if (!isAuthenticated) {
 		return;
 	}
 
+	const menuRoot = document.querySelector('#header-user-menu');
+	const menuTrigger = document.querySelector('#header-user-menu-trigger');
+	const menuDropdown = document.querySelector('#header-user-menu-dropdown');
+
+	const logoutButton = document.querySelector('#header-logout-btn');
+	const profileLink = menuDropdown?.querySelector('a[href="/profile"]');
+
+	if (!menuRoot || !menuTrigger || !menuDropdown || !logoutButton) {
+		return;
+	}
+
+	const openMenu = () => {
+		menuTrigger.setAttribute('aria-expanded', 'true');
+		menuDropdown.classList.add('is-open');
+	};
+
+	const closeMenu = () => {
+		menuTrigger.setAttribute('aria-expanded', 'false');
+		menuDropdown.classList.remove('is-open');
+	};
+
+	const toggleMenu = () => {
+		if (menuDropdown.classList.contains('is-open')) {
+			closeMenu();
+			return;
+		}
+
+		openMenu();
+	};
+
+	const onTriggerClick = (event) => {
+		event.preventDefault();
+		event.stopPropagation();
+		toggleMenu();
+	};
+
+	const onDocumentClick = (event) => {
+		if (!menuRoot.contains(event.target)) {
+			closeMenu();
+		}
+	};
+
+	const onEscapeKey = (event) => {
+		if (event.key === 'Escape') {
+			closeMenu();
+		}
+	};
+
+	const onProfileClick = () => {
+		closeMenu();
+	};
+
+	menuTrigger.addEventListener('click', onTriggerClick);
+	document.addEventListener('click', onDocumentClick);
+	document.addEventListener('keydown', onEscapeKey);
+	profileLink?.addEventListener('click', onProfileClick);
+
 	logoutButton.addEventListener('click', async () => {
 		try {
+			closeMenu();
+
 			if (isSupabaseConfigured && supabase) {
 				const { error } = await supabase.auth.signOut();
 
@@ -183,12 +261,20 @@ const setHeaderActions = (isAuthenticated, currentPath = '/', userRole = 'user')
 			showToast(error?.message || 'Unable to log out right now. Please try again.', 'error');
 		}
 	});
+
+	clearUserMenuListeners = () => {
+		menuTrigger.removeEventListener('click', onTriggerClick);
+		document.removeEventListener('click', onDocumentClick);
+		document.removeEventListener('keydown', onEscapeKey);
+		profileLink?.removeEventListener('click', onProfileClick);
+	};
 };
 
 const updateHeaderAvatarElement = (profileData = {}) => {
-	const profileLink = document.querySelector('#header-profile-link');
+	const avatarContent = document.querySelector('#header-user-avatar-content');
+	const profileTrigger = document.querySelector('#header-user-menu-trigger');
 
-	if (!profileLink) {
+	if (!avatarContent || !profileTrigger) {
 		return;
 	}
 
@@ -198,14 +284,14 @@ const updateHeaderAvatarElement = (profileData = {}) => {
 	const initials = getInitials(normalizedProfile.fullName, normalizedProfile.email);
 	const labelName = normalizedProfile.fullName || 'Profile';
 
-	profileLink.setAttribute('aria-label', `Open profile for ${labelName}`);
+	profileTrigger.setAttribute('aria-label', `Open user menu for ${labelName}`);
 
 	if (normalizedProfile.avatarUrl) {
-		profileLink.innerHTML = `<img src="${escapeHtml(normalizedProfile.avatarUrl)}" alt="${escapeHtml(labelName)} avatar" class="header-profile-avatar-image" />`;
+		avatarContent.innerHTML = `<img src="${escapeHtml(normalizedProfile.avatarUrl)}" alt="${escapeHtml(labelName)} avatar" class="header-profile-avatar-image" />`;
 		return;
 	}
 
-	profileLink.innerHTML = `<span class="header-profile-avatar-fallback">${escapeHtml(initials)}</span>`;
+	avatarContent.innerHTML = `<span class="header-profile-avatar-fallback">${escapeHtml(initials)}</span>`;
 };
 
 const bindProfileSyncListener = () => {

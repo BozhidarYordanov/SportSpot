@@ -24,6 +24,7 @@
 }
 
 .header-profile-avatar-link {
+  appearance: none;
   width: 36px;
   height: 36px;
   border-radius: 999px;
@@ -38,6 +39,8 @@
   -webkit-backdrop-filter: blur(10px);
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
   transition: all 0.3s ease;
+  padding: 0;
+  cursor: pointer;
 }
 
 .header-profile-avatar-link:hover,
@@ -69,6 +72,78 @@
   letter-spacing: 0.01em;
   color: #3730a3;
   background: linear-gradient(130deg, rgba(79, 70, 229, 0.16), rgba(147, 51, 234, 0.14));
+}
+
+.header-user-menu {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.header-user-dropdown {
+  position: absolute;
+  top: calc(100% + 0.6rem);
+  right: 0;
+  min-width: 170px;
+  padding: 0.4rem;
+  border-radius: 16px;
+  border: 1px solid #f0f0f0;
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-6px);
+  transition: all 0.24s ease;
+  z-index: 1100;
+}
+
+.header-user-dropdown.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.header-user-dropdown-item {
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.65rem;
+  background: transparent;
+  color: #1f2937;
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.header-user-dropdown-item .bi {
+  font-size: 0.92rem;
+  line-height: 1;
+}
+
+.header-user-dropdown-item:hover,
+.header-user-dropdown-item:focus-visible,
+.header-user-dropdown-item.active {
+  background: rgba(79, 70, 229, 0.11);
+  color: #312e81;
+  transform: translateY(-2px);
+}
+
+.header-user-dropdown-item-logout {
+  color: #9f1239;
+}
+
+.header-user-dropdown-item-logout:hover,
+.header-user-dropdown-item-logout:focus-visible {
+  background: rgba(244, 63, 94, 0.14);
+  color: #881337;
 }
 
 .navbar .nav-link.nav-link-admin {
@@ -118,5 +193,9 @@
 
   .navbar .nav-link.nav-link-admin {
     width: fit-content;
+  }
+
+  .header-user-dropdown {
+    right: 0;
   }
 }
