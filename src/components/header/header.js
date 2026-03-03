@@ -33,7 +33,7 @@ const renderLogoutButton = () => `
 
 const ROLE_CACHE_KEY = 'user_role';
 
-const getUserRole = async (userId) => {
+export const getUserRole = async (userId) => {
 	if (!userId) {
 		return 'user';
 	}

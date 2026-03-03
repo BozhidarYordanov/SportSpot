@@ -1,0 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+.profile-page {
+  font-family: 'Plus Jakarta Sans', var(--bs-font-sans-serif);
+  background:
+    radial-gradient(circle at 8% 12%, rgba(129, 140, 248, 0.24), transparent 32%),
+    radial-gradient(circle at 90% 8%, rgba(236, 72, 153, 0.16), transparent 30%),
+    radial-gradient(circle at 50% 95%, rgba(79, 70, 229, 0.16), transparent 36%),
+    linear-gradient(150deg, #ffffff 0%, #f7f8ff 46%, #ffffff 100%);
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.profile-glass-card {
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.68);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.profile-glass-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 18px 34px rgba(15, 23, 42, 0.12);
+}
+
+.profile-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: #4f46e5;
+}
+
+.profile-title {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-size: clamp(1.7rem, 3vw, 2.35rem);
+}
+
+.profile-subtitle {
+  color: #475569;
+}
+
+.profile-avatar-wrap {
+  width: clamp(96px, 9vw, 120px);
+  height: clamp(96px, 9vw, 120px);
+  border-radius: 999px;
+  border: 1px solid #f0f0f0;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+
+.profile-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-avatar-fallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: #4f46e5;
+  background: linear-gradient(130deg, rgba(79, 70, 229, 0.14), rgba(147, 51, 234, 0.12));
+}
+
+.profile-avatar-initials {
+  font-size: clamp(1.9rem, 3.2vw, 2.4rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.profile-avatar-icon {
+  font-size: 2rem;
+}
+
+.profile-photo-btn {
+  min-width: 148px;
+}
+
+.profile-section-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.34rem 0.72rem;
+  background: rgba(99, 102, 241, 0.14);
+  color: #3730a3;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.profile-page .form-control {
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  background-color: rgba(255, 255, 255, 0.94);
+  min-height: 3.5rem;
+  padding-left: 1rem;
+}
+
+.profile-page .form-floating > label {
+  padding-left: 1rem;
+  color: #64748b;
+}
+
+.profile-page .form-control:focus {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.2);
+}
+
+@media (max-width: 991.98px) {
+  .profile-glass-card:hover {
+    transform: none;
+  }
+}

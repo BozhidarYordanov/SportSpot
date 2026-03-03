@@ -8,6 +8,7 @@ import { renderClassesPage, initClassesPage } from './pages/classes/classes';
 import { renderClassDetailsPage, initClassDetailsPage } from './pages/class-details/class-details';
 import { renderSchedulePage, initSchedulePage } from './pages/schedule/schedule';
 import { renderAdminPage, initAdminPage } from './pages/admin/admin';
+import { renderProfilePage, initProfilePage } from './pages/profile/profile';
 
 let currentAppElement = null;
 
@@ -39,6 +40,10 @@ const routes = {
   '/admin': {
     render: renderAdminPage,
     init: initAdminPage
+  },
+  '/profile': {
+    render: renderProfilePage,
+    init: initProfilePage
   },
   '/class-details/:slug': {
     render: renderClassDetailsPage,
