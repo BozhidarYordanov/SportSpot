@@ -391,27 +391,68 @@ const loadTopClasses = async () => {
 		return [];
 	}
 
-	let result = await supabase
-		.from('workout_types')
-		.select('slug, title, description, duration_minutes, difficulty_level, category')
-		.order('title', { ascending: true })
-		.limit(4);
+	const { data, error } = await supabase.rpc('get_top_active_classes', {
+		window_days: 7,
+		result_limit: 4
+	});
 
-	if (result.error) {
-		result = await supabase
-			.from('workout_types')
-			.select('slug, title, description, duration_minutes, difficulty_level')
-			.order('title', { ascending: true })
-			.limit(4);
+	if (!error && Array.isArray(data) && data.length > 0) {
+		return data;
 	}
 
-	const { data, error } = result;
+	const nowIso = new Date().toISOString();
+	const weekAheadIso = addDays(new Date(), 7).toISOString();
+	const scheduleResult = await supabase
+		.from('schedule')
+		.select('enrolled_count, workout_type:workout_types(slug, title, description, duration_minutes, difficulty_level, category)')
+		.gt('start_time', nowIso)
+		.lte('start_time', weekAheadIso)
+		.limit(1000);
 
-	if (error || !Array.isArray(data) || data.length === 0) {
+	if (scheduleResult.error || !Array.isArray(scheduleResult.data) || scheduleResult.data.length === 0) {
 		return [];
 	}
 
-	return data;
+	const rankingBySlug = new Map();
+
+	for (const sessionRow of scheduleResult.data) {
+		const workoutType = sessionRow?.workout_type;
+
+		if (!workoutType?.slug) {
+			continue;
+		}
+
+		const slug = String(workoutType.slug).trim();
+
+		if (!slug) {
+			continue;
+		}
+
+		const existingEntry = rankingBySlug.get(slug) || {
+			...workoutType,
+			upcoming_sessions_count: 0,
+			current_bookings_count: 0
+		};
+
+		existingEntry.upcoming_sessions_count += 1;
+		existingEntry.current_bookings_count += Number(sessionRow?.enrolled_count || 0);
+
+		rankingBySlug.set(slug, existingEntry);
+	}
+
+	return Array.from(rankingBySlug.values())
+		.sort((left, right) => {
+			if (right.upcoming_sessions_count !== left.upcoming_sessions_count) {
+				return right.upcoming_sessions_count - left.upcoming_sessions_count;
+			}
+
+			if (right.current_bookings_count !== left.current_bookings_count) {
+				return right.current_bookings_count - left.current_bookings_count;
+			}
+
+			return String(left.title || '').localeCompare(String(right.title || ''));
+		})
+		.slice(0, 4);
 };
 
 export const initIndexPage = async () => {
