@@ -104,8 +104,102 @@ const renderUserDropdown = (currentPath = '/') => `
 `;
 
 let clearUserMenuListeners = null;
+let clearMobileNavListeners = null;
 let currentHeaderProfile = normalizeProfileData();
 let isProfileSyncListenerBound = false;
+
+const getMainNavElements = () => ({
+	collapseElement: document.querySelector('#main-nav'),
+	navbarToggler: document.querySelector('.navbar-toggler[aria-controls="main-nav"]')
+});
+
+const isMainNavOpen = (collapseElement) =>
+	collapseElement?.classList.contains('show') || collapseElement?.classList.contains('active');
+
+const setMainNavExpandedState = (isExpanded) => {
+	const { collapseElement, navbarToggler } = getMainNavElements();
+
+	if (!collapseElement || !navbarToggler) {
+		return;
+	}
+
+	collapseElement.classList.toggle('show', isExpanded);
+	navbarToggler.classList.toggle('collapsed', !isExpanded);
+	navbarToggler.setAttribute('aria-expanded', String(isExpanded));
+};
+
+const hideMainNavCollapse = () => {
+	const { collapseElement } = getMainNavElements();
+
+	if (!collapseElement || !isMainNavOpen(collapseElement)) {
+		return;
+	}
+
+	setMainNavExpandedState(false);
+};
+
+const showMainNavCollapse = () => {
+	const { collapseElement } = getMainNavElements();
+
+	if (!collapseElement || isMainNavOpen(collapseElement)) {
+		return;
+	}
+
+	setMainNavExpandedState(true);
+};
+
+const syncMainNavExpandedState = (isExpanded) => {
+	setMainNavExpandedState(isExpanded);
+};
+
+const bindMobileNavListeners = () => {
+	if (clearMobileNavListeners) {
+		clearMobileNavListeners();
+		clearMobileNavListeners = null;
+	}
+
+	const { collapseElement, navbarToggler } = getMainNavElements();
+
+	if (!collapseElement || !navbarToggler) {
+		return;
+	}
+
+	const onTogglerClick = (event) => {
+		event.preventDefault();
+		event.stopPropagation();
+
+		const isExpanded = collapseElement.classList.contains('show');
+
+		if (isExpanded) {
+			hideMainNavCollapse();
+			syncMainNavExpandedState(false);
+			return;
+		}
+
+		showMainNavCollapse();
+		syncMainNavExpandedState(true);
+	};
+
+	const onCollapseClick = (event) => {
+		const navLink = event.target.closest('.nav-link[data-link]');
+		const profileLink = event.target.closest('#header-user-menu-dropdown a[data-link]');
+		const logoutButton = event.target.closest('#header-logout-btn');
+
+		if (navLink || profileLink || logoutButton) {
+			hideMainNavCollapse();
+		}
+	};
+
+	navbarToggler.addEventListener('click', onTogglerClick);
+	collapseElement.addEventListener('click', onCollapseClick);
+
+	syncMainNavExpandedState(isMainNavOpen(collapseElement));
+
+	clearMobileNavListeners = () => {
+		navbarToggler.removeEventListener('click', onTogglerClick);
+		collapseElement.removeEventListener('click', onCollapseClick);
+	};
+};
 
 export const getUserRole = async (userId) => {
 	if (!userId) {
@@ -151,6 +245,11 @@ const setHeaderActions = (isAuthenticated, currentPath = '/', userRole = 'user')
 		clearUserMenuListeners = null;
 	}
 
+	if (clearMobileNavListeners) {
+		clearMobileNavListeners();
+		clearMobileNavListeners = null;
+	}
+
 	// Remove existing Dashboard nav item if present
 	const existingDashboard = navList.querySelector('[href="/dashboard"]');
 	if (existingDashboard) {
@@ -178,6 +277,8 @@ const setHeaderActions = (isAuthenticated, currentPath = '/', userRole = 'user')
 	logoutContainer.innerHTML = isAuthenticated
 		? renderUserDropdown(currentPath)
 		: renderGuestActions();
+
+	bindMobileNavListeners();
 
 	if (!isAuthenticated) {
 		return;
@@ -225,6 +326,12 @@ const setHeaderActions = (isAuthenticated, currentPath = '/', userRole = 'user')
 		}
 	};
 
+	const onDocumentPointerDown = (event) => {
+		if (!menuRoot.contains(event.target)) {
+			closeMenu();
+		}
+	};
+
 	const onEscapeKey = (event) => {
 		if (event.key === 'Escape') {
 			closeMenu();
@@ -237,6 +344,7 @@ const setHeaderActions = (isAuthenticated, currentPath = '/', userRole = 'user')
 
 	menuTrigger.addEventListener('click', onTriggerClick);
 	document.addEventListener('click', onDocumentClick);
+	document.addEventListener('pointerdown', onDocumentPointerDown);
 	document.addEventListener('keydown', onEscapeKey);
 	profileLink?.addEventListener('click', onProfileClick);
 
@@ -265,6 +373,7 @@ const setHeaderActions = (isAuthenticated, currentPath = '/', userRole = 'user')
 	clearUserMenuListeners = () => {
 		menuTrigger.removeEventListener('click', onTriggerClick);
 		document.removeEventListener('click', onDocumentClick);
+		document.removeEventListener('pointerdown', onDocumentPointerDown);
 		document.removeEventListener('keydown', onEscapeKey);
 		profileLink?.removeEventListener('click', onProfileClick);
 	};
@@ -345,8 +454,6 @@ export const renderHeader = (currentPath = '/') => `
 			<button
 				class="navbar-toggler"
 				type="button"
-				data-bs-toggle="collapse"
-				data-bs-target="#main-nav"
 				aria-controls="main-nav"
 				aria-expanded="false"
 				aria-label="Toggle navigation"
