@@ -344,7 +344,7 @@ const renderScheduleRows = () => {
 
       return `
         <tr>
-          <td>${escapeHtml(formatDateTime(sessionRow.start_time))}</td>
+          <td class="fw-semibold">${escapeHtml(formatDateTime(sessionRow.start_time))}</td>
           <td class="fw-semibold">${escapeHtml(title)}</td>
           <td>${escapeHtml(trainer)}</td>
           <td>${escapeHtml(room)}</td>
@@ -460,9 +460,9 @@ const renderUpcomingBookingRows = () => {
 
       return `
         <tr>
+          <td class="fw-semibold">${escapeHtml(formatDateTime(booking?.schedule?.start_time))}</td>
           <td>${escapeHtml(userName)}</td>
           <td class="fw-semibold">${escapeHtml(workoutTitle)}</td>
-          <td>${escapeHtml(formatDateTime(booking?.schedule?.start_time))}</td>
           <td class="text-end">
             <div class="admin-actions justify-content-end">${actionCell}</div>
           </td>
@@ -558,7 +558,24 @@ const loadUpcomingBookings = async () => {
     throw error;
   }
 
-  state.upcomingBookings = Array.isArray(data) ? data : [];
+  state.upcomingBookings = (Array.isArray(data) ? data : []).sort((leftBooking, rightBooking) => {
+    const leftTimestamp = new Date(leftBooking?.schedule?.start_time || '').getTime();
+    const rightTimestamp = new Date(rightBooking?.schedule?.start_time || '').getTime();
+
+    if (Number.isNaN(leftTimestamp) && Number.isNaN(rightTimestamp)) {
+      return 0;
+    }
+
+    if (Number.isNaN(leftTimestamp)) {
+      return 1;
+    }
+
+    if (Number.isNaN(rightTimestamp)) {
+      return -1;
+    }
+
+    return leftTimestamp - rightTimestamp;
+  });
 
   renderUpcomingBookingRows();
 };

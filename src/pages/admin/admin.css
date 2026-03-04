@@ -159,6 +159,22 @@
   border-top: 0;
 }
 
+.admin-table thead th,
+.admin-table tbody td {
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+.admin-table thead th:first-child,
+.admin-table tbody td:first-child {
+  padding-left: 1.5rem;
+}
+
+.admin-table thead th:last-child,
+.admin-table tbody td:last-child {
+  padding-right: 1.5rem;
+}
+
 .admin-actions {
   display: inline-flex;
   gap: 0.5rem;
