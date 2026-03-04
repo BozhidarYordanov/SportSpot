@@ -2,6 +2,7 @@ import './index.css';
 import indexTemplate from './index.html?raw';
 import { isSupabaseConfigured, supabase } from '../../lib/supabaseClient';
 import { renderClassCard } from '../../components/class-card/class-card';
+import { showToast } from '../../components/toast/toast';
 import { navigateTo } from '../../router';
 import { setPageTitle } from '../../lib/pageTitle';
 
@@ -323,6 +324,8 @@ const bindFeaturedAction = () => {
 				if (state.featuredSession) {
 					state.featuredSession.enrolled_count = Math.max(Number(state.featuredSession.enrolled_count || 0) - 1, 0);
 				}
+
+					showToast('Booking cancelled', 'success');
 			} else {
 				const bookingId = await reserveFeaturedSession(scheduleId, state.userId);
 				state.featuredBookingId = bookingId;
@@ -330,11 +333,15 @@ const bindFeaturedAction = () => {
 				if (state.featuredSession) {
 					state.featuredSession.enrolled_count = Number(state.featuredSession.enrolled_count || 0) + 1;
 				}
+
+					showToast('Spot reserved! See you there.', 'success');
 			}
 
 			renderFeaturedActivity();
 		} catch (error) {
 			console.error('Failed to update featured booking:', error);
+				const errorMessage = error?.message || 'Unable to update booking right now. Please try again.';
+				showToast(errorMessage, 'error');
 
 			if (state.featuredSession?.id) {
 				state.featuredBookingId = await loadFeaturedBookingId(state.featuredSession.id, state.userId);
