@@ -74,6 +74,69 @@ The core database model centers around class definitions, scheduled sessions, an
 
 In other words, **`bookings` is the join layer between members (`profiles`) and class sessions (`schedule`)**.
 
+### Database Schema Design
+
+The diagram below is GitHub-native (Mermaid) and visualizes the core SportSpot schema and relationships:
+
+```mermaid
+erDiagram
+  AUTH_USERS {
+    uuid id PK
+    string email
+    timestamp created_at
+  }
+
+  PROFILES {
+    uuid id PK
+    string full_name
+    string email
+    string phone
+    string avatar_url
+    timestamp created_at
+  }
+
+  USER_ROLES {
+    bigint id PK
+    uuid user_id FK
+    enum role
+  }
+
+  WORKOUT_TYPES {
+    uuid id PK
+    string title
+    text description
+    int duration_minutes
+    int difficulty_level
+    string category
+  }
+
+  SCHEDULE {
+    uuid id PK
+    uuid workout_type_id FK
+    timestamp start_time
+    string trainer_name
+    int capacity
+    int enrolled_count
+    string room
+  }
+
+  BOOKINGS {
+    uuid id PK
+    uuid schedule_id FK
+    uuid user_id FK
+    string guest_name
+    string guest_email
+    string guest_phone
+    timestamp created_at
+  }
+
+  AUTH_USERS ||--|| PROFILES : has_profile
+  AUTH_USERS ||--o{ USER_ROLES : assigned_roles
+  WORKOUT_TYPES ||--o{ SCHEDULE : has_slots
+  SCHEDULE ||--o{ BOOKINGS : receives
+  PROFILES ||--o{ BOOKINGS : makes
+```
+
 ### RBAC and Security (Supabase)
 
 - Role mapping is maintained through a dedicated `user_roles` table.
