@@ -14,6 +14,7 @@ const state = {
   userId: null,
   workouts: [],
   sessions: [],
+  sessionSearchQuery: '',
   upcomingBookings: [],
   bookingSearchQuery: '',
   recentRegistrations: [],
@@ -325,20 +326,35 @@ const renderWorkoutRows = () => {
 const renderScheduleRows = () => {
   const bodyElement = document.querySelector('#admin-sessions-body');
   const emptyElement = document.querySelector('#admin-sessions-empty');
+  const searchElement = document.querySelector('#admin-sessions-search');
 
   if (!bodyElement || !emptyElement) {
     return;
   }
 
+  if (searchElement && searchElement.value !== state.sessionSearchQuery) {
+    searchElement.value = state.sessionSearchQuery;
+  }
+
   if (state.sessions.length === 0) {
     bodyElement.innerHTML = '';
+    emptyElement.textContent = 'No upcoming sessions available.';
+    emptyElement.classList.remove('d-none');
+    return;
+  }
+
+  const sessionsToRender = getFilteredSessions();
+
+  if (sessionsToRender.length === 0) {
+    bodyElement.innerHTML = '';
+    emptyElement.textContent = 'No sessions found matching your search';
     emptyElement.classList.remove('d-none');
     return;
   }
 
   emptyElement.classList.add('d-none');
 
-  bodyElement.innerHTML = state.sessions
+  bodyElement.innerHTML = sessionsToRender
     .map((sessionRow) => {
       const title = sessionRow?.workout_type?.title || 'Workout Session';
       const room = sessionRow.room || 'Room TBC';
@@ -361,6 +377,22 @@ const renderScheduleRows = () => {
       `;
     })
     .join('');
+};
+
+const getFilteredSessions = () => {
+  const query = state.sessionSearchQuery.trim().toLowerCase();
+
+  if (!query) {
+    return state.sessions;
+  }
+
+  return state.sessions.filter((sessionRow) => {
+    const workoutTitle = String(sessionRow?.workout_type?.title || '').toLowerCase();
+    const trainerName = String(sessionRow?.trainer_name || '').toLowerCase();
+    const roomName = String(sessionRow?.room || '').toLowerCase();
+
+    return workoutTitle.includes(query) || trainerName.includes(query) || roomName.includes(query);
+  });
 };
 
 const renderWorkoutTypeOptions = () => {
@@ -592,6 +624,19 @@ const bindBookingsSearch = () => {
   searchElement.addEventListener('input', (event) => {
     state.bookingSearchQuery = String(event.target?.value || '').trimStart();
     renderUpcomingBookingRows();
+  });
+};
+
+const bindSessionsSearch = () => {
+  const searchElement = document.querySelector('#admin-sessions-search');
+
+  if (!searchElement) {
+    return;
+  }
+
+  searchElement.addEventListener('input', (event) => {
+    state.sessionSearchQuery = String(event.target?.value || '').trimStart();
+    renderScheduleRows();
   });
 };
 
@@ -1303,6 +1348,7 @@ export const initAdminPage = async () => {
   bindDeleteSession();
   bindCancelBooking();
   bindBookingsSearch();
+  bindSessionsSearch();
   switchTab(state.activeTab);
 
   try {

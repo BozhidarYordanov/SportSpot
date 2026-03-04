@@ -32,7 +32,7 @@
           <label for="admin-bookings-search" class="form-label mb-1">Search bookings</label>
           <input
             type="search"
-            class="form-control"
+            class="form-control admin-search-input"
             id="admin-bookings-search"
             placeholder="Search by user name or workout title"
             autocomplete="off"
@@ -128,6 +128,16 @@
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
           <h2 class="h5 mb-0">Upcoming Sessions</h2>
           <button type="button" class="btn btn-primary" id="admin-add-session-btn">Add New Session</button>
+        </div>
+        <div class="mb-3">
+          <label for="admin-sessions-search" class="form-label mb-1">Search sessions</label>
+          <input
+            type="search"
+            class="form-control admin-search-input"
+            id="admin-sessions-search"
+            placeholder="Search by workout, trainer, or room..."
+            autocomplete="off"
+          />
         </div>
         <p id="admin-sessions-feedback" class="mb-3 d-none"></p>
         <div class="table-responsive admin-table-wrap rounded-4">
