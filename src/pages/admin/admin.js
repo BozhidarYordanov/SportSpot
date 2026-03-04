@@ -14,7 +14,8 @@ const state = {
   userId: null,
   workouts: [],
   sessions: [],
-  todayBookings: [],
+  upcomingBookings: [],
+  bookingSearchQuery: '',
   recentRegistrations: [],
   activeTab: 'bookings',
   selectedWorkoutToDelete: null,
@@ -196,16 +197,6 @@ const toLocalDateTimeValue = (isoDateTime) => {
 
   const pad = (value) => String(value).padStart(2, '0');
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-};
-
-const getLocalDayRange = (date = new Date()) => {
-  const start = new Date(date);
-  start.setHours(0, 0, 0, 0);
-
-  const end = new Date(start);
-  end.setDate(end.getDate() + 1);
-
-  return { startIso: start.toISOString(), endIso: end.toISOString() };
 };
 
 const formatDateTime = (value) => {
@@ -417,18 +408,41 @@ const loadUpcomingSessions = async () => {
   renderScheduleRows();
 };
 
-const renderTodayBookingRows = () => {
+const getFilteredUpcomingBookings = () => {
+  const query = state.bookingSearchQuery.trim().toLowerCase();
+
+  if (!query) {
+    return state.upcomingBookings;
+  }
+
+  return state.upcomingBookings.filter((booking) => {
+    const userName =
+      booking?.profile?.full_name?.trim() || booking?.guest_name?.trim() || booking?.profile?.email?.trim() || booking?.guest_email?.trim() || '';
+    const workoutTitle = booking?.schedule?.workout_type?.title || '';
+
+    return userName.toLowerCase().includes(query) || workoutTitle.toLowerCase().includes(query);
+  });
+};
+
+const renderUpcomingBookingRows = () => {
   const bodyElement = document.querySelector('#admin-bookings-body');
   const emptyElement = document.querySelector('#admin-bookings-empty');
   const totalElement = document.querySelector('#admin-bookings-total');
+  const searchElement = document.querySelector('#admin-bookings-search');
 
   if (!bodyElement || !emptyElement || !totalElement) {
     return;
   }
 
-  totalElement.textContent = `Total Bookings Today: ${state.todayBookings.length}`;
+  if (searchElement && searchElement.value !== state.bookingSearchQuery) {
+    searchElement.value = state.bookingSearchQuery;
+  }
 
-  if (state.todayBookings.length === 0) {
+  totalElement.textContent = `Total Upcoming Bookings: ${state.upcomingBookings.length}`;
+
+  const bookingsToRender = getFilteredUpcomingBookings();
+
+  if (bookingsToRender.length === 0) {
     bodyElement.innerHTML = '';
     emptyElement.classList.remove('d-none');
     return;
@@ -436,27 +450,22 @@ const renderTodayBookingRows = () => {
 
   emptyElement.classList.add('d-none');
 
-  bodyElement.innerHTML = state.todayBookings
+  bodyElement.innerHTML = bookingsToRender
     .map((booking) => {
       const userName =
         booking?.profile?.full_name?.trim() || booking?.guest_name?.trim() || booking?.profile?.email?.trim() || booking?.guest_email?.trim() || 'Guest';
 
       const workoutTitle = booking?.schedule?.workout_type?.title || 'Workout Session';
-      const status = booking?.status || 'upcoming';
-      const statusLabel = status === 'past' ? 'Completed' : 'Upcoming';
-      const statusClass = status === 'past' ? 'admin-status-past' : 'admin-status-upcoming';
-      const canCancel = status !== 'past';
-      const actionCell = canCancel
-        ? `<button type="button" class="btn btn-sm btn-outline-danger admin-cancel-booking-btn" data-action="cancel-booking" data-id="${booking.id}">Cancel</button>`
-        : '<span class="text-secondary">—</span>';
+      const actionCell = `<button type="button" class="btn btn-sm btn-outline-danger admin-cancel-booking-btn" data-action="cancel-booking" data-id="${booking.id}">Cancel</button>`;
 
       return `
         <tr>
-          <td class="fw-semibold">${escapeHtml(userName)}</td>
-          <td>${escapeHtml(workoutTitle)}</td>
-          <td>${escapeHtml(formatTime(booking?.schedule?.start_time))}</td>
-          <td><span class="admin-status-pill ${statusClass}">${escapeHtml(statusLabel)}</span></td>
-          <td class="text-end">${actionCell}</td>
+          <td>${escapeHtml(userName)}</td>
+          <td class="fw-semibold">${escapeHtml(workoutTitle)}</td>
+          <td>${escapeHtml(formatDateTime(booking?.schedule?.start_time))}</td>
+          <td class="text-end">
+            <div class="admin-actions justify-content-end">${actionCell}</div>
+          </td>
         </tr>
       `;
     })
@@ -464,9 +473,9 @@ const renderTodayBookingRows = () => {
 };
 
 const openCancelBookingModal = (bookingId) => {
-  const booking = state.todayBookings.find((item) => item.id === bookingId);
+  const booking = state.upcomingBookings.find((item) => item.id === bookingId);
 
-  if (!booking || booking.status === 'past') {
+  if (!booking) {
     return;
   }
 
@@ -474,11 +483,11 @@ const openCancelBookingModal = (bookingId) => {
   const userName =
     booking?.profile?.full_name?.trim() || booking?.guest_name?.trim() || booking?.profile?.email?.trim() || booking?.guest_email?.trim() || 'Guest';
   const workoutTitle = booking?.schedule?.workout_type?.title || 'Workout Session';
-  const bookingTime = formatTime(booking?.schedule?.start_time);
+  const bookingTime = formatDateTime(booking?.schedule?.start_time);
   const copyElement = document.querySelector('#admin-cancel-booking-copy');
 
   if (copyElement) {
-    copyElement.textContent = `Cancel ${userName}'s booking for ${workoutTitle} at ${bookingTime}? This will free one spot in the schedule.`;
+    copyElement.textContent = `Cancel ${userName}'s booking for ${workoutTitle} on ${bookingTime}? This will free one spot in the schedule.`;
   }
 
   state.modals.cancelBooking?.show();
@@ -536,34 +545,35 @@ const renderRegistrationData = (counts) => {
     .join('');
 };
 
-const loadTodayBookings = async () => {
-  const { startIso, endIso } = getLocalDayRange(new Date());
-
+const loadUpcomingBookings = async () => {
   const { data, error } = await supabase
     .from('bookings')
     .select(
       'id, user_id, guest_name, guest_email, created_at, schedule!inner(start_time, workout_type:workout_types(title)), profile:profiles!bookings_user_id_fkey(full_name, email)'
     )
-    .gte('schedule.start_time', startIso)
-    .lt('schedule.start_time', endIso)
+    .gte('schedule.start_time', new Date().toISOString())
     .order('start_time', { ascending: true, referencedTable: 'schedule' });
 
   if (error) {
     throw error;
   }
 
-  const now = Date.now();
-  state.todayBookings = (Array.isArray(data) ? data : []).map((row) => {
-    const scheduleStart = row?.schedule?.start_time;
-    const startTimestamp = scheduleStart ? new Date(scheduleStart).getTime() : Number.NaN;
+  state.upcomingBookings = Array.isArray(data) ? data : [];
 
-    return {
-      ...row,
-      status: Number.isNaN(startTimestamp) ? 'upcoming' : startTimestamp < now ? 'past' : 'upcoming'
-    };
+  renderUpcomingBookingRows();
+};
+
+const bindBookingsSearch = () => {
+  const searchElement = document.querySelector('#admin-bookings-search');
+
+  if (!searchElement) {
+    return;
+  }
+
+  searchElement.addEventListener('input', (event) => {
+    state.bookingSearchQuery = String(event.target?.value || '').trimStart();
+    renderUpcomingBookingRows();
   });
-
-  renderTodayBookingRows();
 };
 
 const loadRegistrationMetrics = async () => {
@@ -800,8 +810,8 @@ const bindTabSwitching = () => {
         switchTab(tabName);
 
         if (tabName === 'bookings') {
-          loadTodayBookings().catch((error) => {
-            const errorMessage = error?.message || 'Unable to refresh today\'s bookings.';
+          loadUpcomingBookings().catch((error) => {
+            const errorMessage = error?.message || 'Unable to refresh upcoming bookings.';
             setFeedback('#admin-feedback', errorMessage);
             showToast(errorMessage, 'error');
           });
@@ -1049,7 +1059,7 @@ const bindDeleteWorkout = () => {
 
       state.selectedWorkoutToDelete = null;
       state.modals.deleteWorkout?.hide();
-      await Promise.all([loadWorkoutTypes(), loadTodayBookings()]);
+      await Promise.all([loadWorkoutTypes(), loadUpcomingBookings()]);
       setFeedback('#admin-workouts-feedback', 'Workout type removed', false);
       showToast('Workout type removed', 'success');
     } catch (error) {
@@ -1135,7 +1145,7 @@ const bindSessionForm = () => {
       }
 
       state.modals.session?.hide();
-      await Promise.all([loadUpcomingSessions(), loadTodayBookings()]);
+      await Promise.all([loadUpcomingSessions(), loadUpcomingBookings()]);
     } catch (error) {
       const errorMessage = error?.message || 'Unable to save session right now.';
       setFeedback('#admin-session-feedback', errorMessage);
@@ -1169,7 +1179,7 @@ const bindDeleteSession = () => {
 
       state.selectedSessionToDelete = null;
       state.modals.deleteSession?.hide();
-      await Promise.all([loadUpcomingSessions(), loadTodayBookings()]);
+      await Promise.all([loadUpcomingSessions(), loadUpcomingBookings()]);
       setFeedback('#admin-sessions-feedback', 'Session cancelled', false);
       showToast('Session cancelled', 'success');
     } catch (error) {
@@ -1203,7 +1213,7 @@ const bindCancelBooking = () => {
 
       state.selectedBookingToCancel = null;
       state.modals.cancelBooking?.hide();
-      await Promise.all([loadTodayBookings(), loadUpcomingSessions()]);
+      await Promise.all([loadUpcomingBookings(), loadUpcomingSessions()]);
       showToast('User reservation removed and spot freed', 'success');
       setFeedback('#admin-feedback', '', false);
     } catch (error) {
@@ -1273,11 +1283,12 @@ export const initAdminPage = async () => {
   bindSessionForm();
   bindDeleteSession();
   bindCancelBooking();
+  bindBookingsSearch();
   switchTab(state.activeTab);
 
   try {
     setFeedback('#admin-feedback', '');
-    await Promise.all([loadTodayBookings(), loadRegistrationMetrics(), loadWorkoutTypes(), loadUpcomingSessions()]);
+    await Promise.all([loadUpcomingBookings(), loadRegistrationMetrics(), loadWorkoutTypes(), loadUpcomingSessions()]);
   } catch (error) {
     const errorMessage = error?.message || 'Unable to load admin data right now.';
     setFeedback('#admin-feedback', errorMessage);
