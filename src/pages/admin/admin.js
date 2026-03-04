@@ -211,7 +211,8 @@ const formatDateTime = (value) => {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
+    hour12: false
   });
 };
 
@@ -223,8 +224,9 @@ const formatTime = (value) => {
   }
 
   return date.toLocaleTimeString(undefined, {
-    hour: 'numeric',
-    minute: '2-digit'
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
   });
 };
 

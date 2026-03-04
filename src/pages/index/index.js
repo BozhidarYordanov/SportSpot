@@ -66,7 +66,8 @@ const formatFeaturedTimeLabel = (timestamp) => {
 	const dayLabel = sessionKey === todayKey ? 'Today' : sessionKey === tomorrowKey ? 'Tomorrow' : date.toLocaleDateString(undefined, { weekday: 'short' });
 	const timeLabel = date.toLocaleTimeString(undefined, {
 		hour: '2-digit',
-		minute: '2-digit'
+		minute: '2-digit',
+		hour12: false
 	});
 
 	return `${dayLabel} • ${timeLabel}`;

@@ -99,6 +99,23 @@ function dateKeyUtc(date) {
   return date.toISOString().slice(0, 10);
 }
 
+function formatSeedDateTime24(value) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return 'Date TBC';
+  }
+
+  return date.toLocaleString(undefined, {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+}
+
 function pickRoundRobin(list, index) {
   return list[index % list.length];
 }
@@ -549,8 +566,14 @@ async function main() {
   const allBookings = [...allUsersPastBookings, ...upcomingMemberBookings];
   await insertBookingsInBatches(adminUser.client, allBookings);
 
+  const earliestFutureSession = future[0]?.start_time || null;
+  const latestFutureSession = future[future.length - 1]?.start_time || null;
+  const seededWindow = earliestFutureSession && latestFutureSession
+    ? `${formatSeedDateTime24(earliestFutureSession)} → ${formatSeedDateTime24(latestFutureSession)}`
+    : 'n/a';
+
   console.log(
-    `[SportSpot seed complete] users=${users.length} workouts=${workouts.length} bookings=${allBookings.length}`
+    `[SportSpot seed complete] users=${users.length} workouts=${workouts.length} bookings=${allBookings.length} future_window=${seededWindow}`
   );
 }
 

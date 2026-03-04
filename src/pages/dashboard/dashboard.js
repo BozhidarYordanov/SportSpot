@@ -29,7 +29,8 @@ const formatSessionDateTime = (timestamp) => {
 
 	const timeText = date.toLocaleTimeString(undefined, {
 		hour: '2-digit',
-		minute: '2-digit'
+		minute: '2-digit',
+		hour12: false
 	});
 
 	return `${dateText} • ${timeText}`;

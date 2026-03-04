@@ -64,7 +64,8 @@ function formatTime(timestamp) {
 
   return date.toLocaleTimeString(undefined, {
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
+    hour12: false
   });
 }
 
@@ -399,7 +400,8 @@ async function loadUpcomingReservations() {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      hour12: false
     });
     titleElement.textContent = detail.title || 'Workout Session';
 
