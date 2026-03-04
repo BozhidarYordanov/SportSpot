@@ -153,6 +153,21 @@ erDiagram
 - Fallback path computes rankings client-side from upcoming schedule rows if RPC is unavailable.
 - Ranking prioritizes upcoming session volume, then current enrollment demand.
 
+### Featured Activity (landing hero)
+- Landing page selects one featured session from upcoming `schedule` rows and displays it in the hero card.
+- Selection priority:
+  - First, the earliest **bookable evening session** (from today/next day onward) within a 48-hour lookahead window.
+  - If none exists, fallback to the earliest next bookable session.
+- Evening qualification rule: to be considered “featured” in the primary selection path, the session must start at or after **6:00 PM (18:00)** local time.
+- Bookable means: valid `start_time`, starts in the future, and has remaining spots (`capacity - enrolled_count > 0`).
+- CTA behavior is role/session aware:
+  - Guest users: `Reserve now` redirects to login.
+  - Authenticated users with no booking: `Reserve now` creates a booking.
+  - Authenticated users with existing booking: `Cancel Booking` deletes their reservation.
+  - Full sessions: CTA is disabled.
+- UI state updates immediately after reserve/cancel by adjusting local `enrolled_count` and re-rendering the card.
+- Reserve/cancel actions trigger toast feedback for success and error outcomes.
+
 ### Secure profile management
 - Profile data is tied to authenticated users (`auth.users` + `profiles`).
 - Avatar uploads are supported through a dedicated Supabase Storage bucket with ownership-aware policies.
